@@ -48,7 +48,7 @@ model, and which features silently do nothing. Decide this first:
 | --- | --- | --- |
 | **Snapchat** (Face / World Lens) | current mainline — **5.23.x** (5.23.1, Aug 5 2026) | file-size/RAM/FPS budgets; `RemoteServiceModule` for approved APIs |
 | **Spectacles (2024)** | **pinned to 5.15.x** (5.15.4) — *not* mainline | thermal/power budget plus a [≤ 25 MB published-Lens cap](https://developers.snap.com/spectacles/get-started/start-building/publishing-lens); SIK/Sync Kit; `InternetModule` (open `fetch`) |
-| **Camera Kit** (your own iOS/Android/Web app) | pinned per a **drifting LS↔SDK matrix** — re-check at build | some Lens features are unavailable (Remote Service–enabled Lenses, Licensed Sounds, Scan, VoiceML/TTS, Multi-User, Spatial Persistence). **Bitmoji IS supported** on Camera Kit |
+| **Camera Kit** (your own iOS/Android/Web app) | pinned per a **drifting LS↔SDK matrix** — re-check at build | some Lens features are unavailable: Remote Service–enabled Lenses, Licensed Sounds, Scan, VoiceML/TTS, Multi-User, Spatial Persistence. **Ray Tracing: unsupported on Android, supported on iOS.** **Bitmoji IS available**, marked "limited compatibility" — see `interactivity-audio-text-ui-integrations.md` |
 
 > Verify the current version and the Spectacles pin at
 > [ar.snap.com/download](https://ar.snap.com/download) (mainline) and
@@ -94,8 +94,8 @@ strings, numeric budgets, component names) rather than answering from memory.
 | --- | --- |
 | Project setup, editor panels, cameras/render targets, preview, pairing, publish workflow | `references/fundamentals-and-workflow.md` |
 | JS/TS scripting, events, lifecycle, modules, Behavior, Tween | `references/scripting.md` |
-| Face attachment/mesh/expressions/retouch, face ML effects | `references/face-tracking-and-effects.md` |
-| World/surface, body, hand, marker, landmark tracking, segmentation | `references/world-body-and-tracking.md` |
+| Face attachment/mesh/**face landmarks**/expressions/retouch, face ML effects | `references/face-tracking-and-effects.md` |
+| World/surface, body, hand, marker, Landmarker/location tracking, segmentation | `references/world-body-and-tracking.md` |
 | Materials/shaders, particles/VFX, lighting, the render pipeline | `references/materials-rendering-vfx.md` |
 | Custom ML models (SnapML) + generative-AI authoring tools | `references/snapml-and-generative-ai.md` |
 | UI, text, audio, tween/animation, multiplayer (Connected Lenses), networking, Camera Kit, Spectacles | `references/interactivity-audio-text-ui-integrations.md` |
@@ -190,8 +190,11 @@ source before trusting it.
 - **A feature silently does nothing** → it's unsupported on your target
   (`fetch`/InternetModule on Snapchat Lenses, some Connected-Lenses APIs, Ray
   Tracing / Classification on unsupported devices, Remote Service–enabled Lenses
-  / Licensed Sounds / Scan / VoiceML on Camera Kit — but **not** Bitmoji, which
-  Camera Kit does support). Check the support badge before assuming a bug.
+  / Licensed Sounds / Scan / VoiceML on Camera Kit). Check the support badge on the
+  feature's own doc page — **absence from Camera Kit's unsupported list is not
+  evidence of exclusion**, that list only enumerates what is broken. Bitmoji is the
+  worked example: absent from the matrix, but its badge marks Camera Kit
+  Android/iOS/Web "limited compatibility".
 - **Null reference on startup** → you wired cross-component references in
   `OnAwake` instead of `OnStart`.
 - **Spectacles push breaks after a Lens Studio update** → you left the 5.15.x pin.

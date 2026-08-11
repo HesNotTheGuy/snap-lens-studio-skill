@@ -93,7 +93,7 @@ The [Submission Guidelines](https://developers.snap.com/lens-studio/publishing/s
 
 ## Spectacles Lenses — a different performance model
 
-Authored in Lens Studio but **pinned to 5.15.x** (not mainline 5.22), Spectacles uses a **thermal/power-centric** model. Snap explicitly warns "some specifics for Spectacles may contradict these general guidelines" — do not copy mobile budgets.
+Authored in Lens Studio but **pinned to 5.15.x** (not the 5.2x mainline), Spectacles uses a **thermal/power-centric** model. Snap explicitly warns "some specifics for Spectacles may contradict these general guidelines" — do not copy mobile budgets.
 
 - **Target ~60 FPS**, render time **under ~16 ms/frame** (1000 ÷ 60 = 16.67 ms) ([Lens Performance Overlay](https://developers.snap.com/spectacles/best-practices/profiling/lens-performance-overlay)).
 - **Lens Performance Overlay HUD** shows Lens CPU %, Lens GPU %, Battery, Lens FPS, Lens Render Time, where **100% = target performance budget.** Zones: **< 100%** battery-runtime constrained (target); **100–125%** thermally constrained (may throttle/shorten runtime); **> 125%** severe thermal → very likely thermal standby/shutdown.
