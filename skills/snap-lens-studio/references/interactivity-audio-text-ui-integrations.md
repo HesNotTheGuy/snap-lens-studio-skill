@@ -139,6 +139,7 @@ Controls that help the user (pickers, sliders) usually should **not** bake into 
 ### Owning touch without breaking Snapchat
 - `global.touchSystem.touchBlocking = true` makes the lens handle touches full-screen; pair with `enableTouchBlockingException("TouchTypeDoubleTap", true)` so double-tap camera-flip still works.
 - Vertical drags are relatively safe to claim (the lens carousel is horizontal), making "swipe up/down anywhere" a good gesture for a 1-D parameter — often better UX than an on-screen slider, at zero screen cost.
+- ⚠️ **A bare `TapEvent` under `touchBlocking = true` can receive nothing** — verified by injecting taps that produced no state change at all. If you claim touches, bind `TouchStartEvent` as well behind an idempotent handler so one physical tap toggles once. Better still, **do not claim touches on a tap-only Lens**: a tap has no direction, so there is nothing for the carousel to steal, and claiming costs the user their carousel navigation for no benefit.
 
 ### Persist settings so a retake doesn't reset the lens
 By default every retake re-runs the lens: parameters snap back to defaults and first-run hints re-appear. Fix with **persistent storage**, which survives retakes and sessions on that device.

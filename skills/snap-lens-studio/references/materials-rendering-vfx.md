@@ -86,6 +86,9 @@ Enforce these from the [Performance Optimization Guide](https://developers.snap.
 
 From building ~15 full-screen post-effect lenses on the `CodeNodeMaterialPreset` (custom GLSL node) pipeline, LS 5.22.1, Jul 2026.
 
+### ⚠️ A failed compile is SILENT — check it after every scripted edit
+A custom code node that fails to compile shows **no magenta, no console error and no exception**; the material silently falls back and the Lens keeps rendering while doing nothing. Detect it with `material.passInfos[0].getPropertyNames()` — a healthy pass lists its real parameters, a dead one returns exactly `["mainColor"]`. The failed compile is **cached**, so a preview refresh will not clear it: open another project and reopen this one. Causes worth knowing: a **reserved GLSL keyword used as a variable** (`flat`, `sample`, `filter`, `input`, `output`, `layout`, `discard`, and the memory qualifiers `coherent`, `volatile`, `restrict`, `readonly`, `writeonly`), a **backslash anywhere** in a spliced body, calling a helper this harness does not declare, and int/float mixing such as `pow(x, 3)`. See SKILL.md → *Silent failures in custom code-node shaders* for the full table and the mediump-precision traps (out-of-range sentinels, `floor()` shifted by non-representable constants, and hash helpers overflowing to NaN).
+
 ### Driving a shader from script
 - A `.graphShader` custom-code node exposes `input_float` / `input_vec2` / `input_texture_2d` params wired to graph parameter nodes; script sets them as `material.mainPass.<scriptName>`.
 - ⚠️ **Adding a new parameter means hand-editing the `.graphShader` YAML** (a `nodes_inputs_parameters_texture2d_object` / `..._float` node plus port wiring). To skip that surgery, **pack two values into one float** and decode in GLSL — e.g. `paramA = mode*10 + strength` → `mode = floor(paramA/10)`, `strength = paramA - mode*10`; or `floor(hue*360) + sat` for a hue+saturation pair. Works for any "index + continuous knob" pair.
@@ -102,6 +105,8 @@ From building ~15 full-screen post-effect lenses on the `CodeNodeMaterialPreset`
 - **Glow/halo quality:** sampling a mask at a *single* radius gives a hard, banded, "geometric" ring. A **multi-ring gaussian** (e.g. 5 radii × 16 angles, weights `exp(-r²·k)`, normalized) produces the soft cloud people expect — the single biggest visual-quality fix across the suite.
 - **Fisheye:** a tan-law radial warp *magnifies* the center and reads as mere edge distortion. The phone-ultra-wide look people actually want is the **inverse** (`atan`) law — center minified, edges stretched. Do the warp in **axis-normalized space** (elliptically symmetric); per-direction rectangle normalization introduces visible **seam bands** along the diagonals. Scale display space with zoom so the lens's dark corners crop away as you punch in, matching real optics.
 - **Segmentation:** a Body `SegmentationTexture` bound as a second texture gives `person` ∈ 0..1 for compositing (`mix(effect, cam, person)`); blur it for silhouette glows.
+- **Any threshold or multiply against an ABSOLUTE pixel value makes the effect subject-dependent.** A threshold compared against raw luminance has a usable range that *moves* with the subject, and a `col * tint` multiply has authority proportional to how bright the subject already is — both mean the effect does measurably less for some users than others. Drive selection from a quantity that is uniformly 0..1 for every subject, and blend toward an **additive** term as the input darkens. See SKILL.md → *Controls that are alive in code and dead on screen*.
+- **Locating a subject with min/max over a thresholded scan quantises the result** to 1/N and causes a cliff, banding and frame-to-frame popping at once. Use **weighted moments** (mask value as the weight; centroid plus standard deviation) for a continuous answer at the same tap count.
 - Choose preview media that actually contains what the effect keys off — a "sparkle" that blooms highlights looks broken on flat lighting and sings on point lights. Not every dull result is a bug.
 
 ## Go deeper
@@ -113,3 +118,228 @@ From building ~15 full-screen post-effect lenses on the `CodeNodeMaterialPreset`
 - [Ray Tracing guide](https://developers.snap.com/lens-studio/features/graphics/raytracing/raytracing-guide) — reflections/GI setup and device support.
 - [Performance Optimization Guide](https://developers.snap.com/lens-studio/publishing/optimization/performance-optimization-guide) and [Texture Optimization](https://developers.snap.com/lens-studio/publishing/optimization/texture-optimization) — the budgets every rendering choice must fit inside.
 - [ar.snap.com/lens-studio-v5](https://ar.snap.com/lens-studio-v5) — versioned release notes; LS 5.22 brought YAML graph files, Pause When Not Visible, Particle Orient Node.
+## Estimating a subject's position from a segmentation mask
+
+A shader with no face-position uniform can derive one by sampling the
+segmentation mask on a fixed lattice and taking the mask-weighted centroid. Two
+failure modes decide whether it works.
+
+**Cover the subject's range before stratifying within it.** It is tempting to
+give every sample its own column, on the reasoning that stratifying x cuts the
+variance of the marginal you want while stratifying y only buys coverage. That
+is wrong as soon as the subject can appear at different HEIGHTS, because a row
+that misses the subject contributes no weight at all - it does not add variance
+to a column's estimate, it deletes that column from the estimate. A lattice
+whose rows sit outside the usual subject band silently runs on a fraction of its
+samples.
+
+Measured for a head-centroid estimator at a fixed 24-sample budget, over subject
+centres spanning x 0.34-0.67 and y 0.52-0.92 at three distances:
+
+| lattice | rms error | worst | fell back to centre |
+|---|---|---|---|
+| 24 columns x 1, rows 0.30/0.49/0.68/0.87 | 0.0427 | 0.179 | 7.5% |
+| 8 columns x 3, rows 0.58/0.72/0.86 | 0.0240 | 0.066 | 0.0% |
+
+Same budget, same single texture. Spend samples on covering the range first;
+stratify inside it with whatever is left.
+
+Two arithmetic notes. Derive the row index with a power-of-two divisor -
+`floor(fi / 8.0)` is exact for the whole loop range, where `floor(k * 0.2)`
+silently shifts at mediump. And always give the estimator a floor
+(`step(0.06, weightSum)`) plus a sane fallback, because an estimator that snaps
+to screen centre when it loses the subject is indistinguishable from a dead
+shader.
+
+## Softening a mask boundary, and when not to soften it at all
+
+**Widening a smoothstep window does not widen a mask edge.** A segmentation
+edge climbs 0 to 1 across a couple of pixels, so `smoothstep(0.14, 0.86, m)`
+lands on the same few pixels `smoothstep(0.30, 0.62, m)` did. To spread a mask
+boundary you must blur in SCREEN space - average the mask across a span of
+texels along the axis that matters - not stretch the value window.
+
+**A shape mismatch cannot be feathered away.** When the content on the two sides
+of a boundary differs in shape rather than tone - a mirrored face half has no
+ear where the real head has one - every blend width reads as a drawn contour,
+because there is no width at which the two agree. Fill the region instead of
+gating it: displace the source coordinate until it lands back inside valid
+content, so the neighbouring texture stretches to cover the gap. Make the
+displacement proportional to how invalid the sample is, and it is exactly zero
+wherever the effect already works. Keep a soft validity check on the displaced
+coordinate as a fallback for the extreme case.
+
+## Review every state a control can reach
+
+A lens whose control cycles N states has N renders, and checking the default is
+checking 1/N of the lens. A defect that is invisible in the state a lens boots
+into will ship. Exercise the control through its full cycle during review, on a
+video source - and note that a still preview freezes both time and redraw, so
+anything animated or interactive must never be validated on one.
+
+## A curve duplicated in JS and GLSL is NOT the same arithmetic
+
+When the same easing curve exists twice - once in the control script driving a
+uniform, once in the shader as a fallback - the two run at different precisions,
+and that difference can turn one copy into NaN while the other is fine.
+
+A real case: `q = (p - 0.18) / 0.82; q = 1.0 - pow(1.0 - q, 2.2);`
+
+- **JS, float64**: `1.0 - 0.18` is `0.8200000000000001`, one ulp LARGER than the
+  literal `0.82`. At `p = 1.0` this gives `q = 1.0000000000000002`, so `1.0 - q`
+  is **negative**, and `Math.pow(negative, 2.2)` is **NaN** by spec.
+- **GLSL, float32**: `1.0 - 0.18` and `0.82` are the *same* float. Base is `+0.0`,
+  `pow(0.0, 2.2)` is `0`. Correct.
+
+The shader copy is right by rounding luck. Reading the two side by side is
+therefore actively reassuring - they look identical and one of them is broken.
+
+Rules that follow:
+- Write a denominator as the expression that matches its numerator's endpoint
+  (`(1.0 - 0.18)`), never as a decimal literal that is "the same number".
+- **Clamp any `pow` base that was produced by subtraction.** A base meant to
+  reach exactly 0 will overshoot to -1e-16 about half the time.
+- A NaN written into a material uniform is worse than a wrong number: GLSL
+  `min`/`max`/`clamp` with a NaN operand is implementation-defined, so it either
+  poisons the whole frame or silently collapses the control to zero - and which
+  one you get depends on the GPU, so it may never reproduce on the machine you
+  test on.
+
+## Blurring: three rules that each cost a wasted pass to learn
+
+- **A ring is not a blur.** N taps on a circle of radius r is N discrete probes
+  that swing about as the pixel moves; it aliases rather than low-passing. If a
+  value must be smooth, tile the area (a 4x4 box) instead of sampling its edge.
+- **You cannot smooth away detail finer than your tap spacing.** Killing 2 px
+  texture across a 40 px neighbourhood needs hundreds of taps, not sixteen. When
+  a smoothing term is not working, check the SPACING before adding taps - and if
+  the arithmetic says the tap count is unreachable, change the term that the
+  artefact is *linear* in instead. That is usually a weight, not a radius.
+- **A mask feather must be finer than the smallest detail it is meant to
+  reveal.** Adding fine octaves to an edge does nothing if the mask's smoothstep
+  softens across more pixels than the octaves span - the fix gets blurred back
+  out and the original artefact appears to survive it.
+
+## Scale a jitter-producing weight with the feature size it perturbs
+
+If an artefact's size in PIXELS goes as `weight / featureCount`, a fixed weight
+makes the coarse setting several times worse than the fine one. That matters
+disproportionately when the lens BOOTS into the coarse setting, because the
+first thing every user sees is the worst state the lens can produce. Scale the
+weight so the artefact is constant in pixels across the control's whole range.
+
+## A blend weight cannot carry authority past 1.0
+
+When a control feels weak at the top, the tempting fix is to raise the ceiling
+on its blend weight: `mix(col, target, clamp(mask * mix(0.55, 1.45, s), 0, 1))`.
+That is worse than doing nothing. The expression is clamped, so wherever `mask`
+is 1 the weight saturates at `s = 0.5` and the entire upper half of the travel
+becomes **bit-identical** - measured at 0.00/255 across deep, medium and light
+skin on a real lens. The "fix" converted a top half that was merely hard to
+distinguish into one that was exactly the same.
+
+You cannot blend more than fully. If a control needs more authority than a full
+blend, it has to move the **target**, not the weight:
+
+- keep the weight ending at exactly 1.0, reached at `s = 1`, never clamped
+- put the recovered range into the target colour - effect depth, tint strength,
+  the size of an additive shift
+
+**Check for this by pattern, not by eye:** any `clamp(k * mix(a, b, s), 0, 1)`
+where `b > 1` has a dead zone starting at `s = (1 - a) / (b - a)` wherever
+`k = 1`. It is visible in the source without rendering anything.
+
+### Scaling an "approximately neutral" constant scales its error
+
+A vector documented as "near luma-neutral (+0.011)" was fine while it was
+applied once. Multiplying it to recover lost control travel multiplied the error
+with it, reaching +0.028 luma - i.e. the recovered travel went into brightness,
+which was the one thing the design forbade. **Any constant that is about to
+become scalable must first be solved for its invariant, not eyeballed.**
+Solve `0.299R + 0.587G + 0.114B = 0` and the vector stays neutral at every
+scale. Doing so here also *increased* the useful travel on dark skin.
+
+## Never label a measurement capture by the state you think you set
+
+Verifying an effect means comparing it against itself disabled, which means
+toggling something and capturing twice. The trap is labelling those captures
+from your own bookkeeping - "I tapped the toggle, so this one is OFF."
+
+Toggle state tracked by counting injected taps **drifts**. A tap that misses, an
+extra one, a preview reset between subjects, and the labels invert. And the
+failure is silent: nothing errors, the numbers look plausible, and the
+conclusion comes out backwards. In one real case this produced "the effect
+lightens skin on 96% of the area, the logic is inverted" for a lens whose logic
+was entirely correct - a retune of the working code was minutes away.
+
+**Derive the label from the pixels instead.** Pick a property only the enabled
+state can have, and let the data say which capture is which:
+
+- a warm/tan effect -> the enabled frame has the lower G/R ratio on skin
+- a desaturating effect -> the enabled frame has lower max-minus-min per pixel
+- an overlay or mask -> the enabled frame has pixels the disabled one cannot
+
+A self-labelling measurement cannot drift. It also survives the reviewer asking
+"are you sure that was the ON frame?", which a tap count never does.
+
+Two supporting habits:
+- **Measure on a STILL source.** With video, subject motion between two captures
+  adds a difference floor that has nothing to do with the effect - one such
+  comparison read 12.9/255 whole-frame before motion was ruled out. If the
+  control is a runtime uniform write, confirm the toggle registers on the still
+  first, since some projects do not receive runtime writes in preview.
+- **Look at a spatial diff, not just an aggregate.** Render darker-vs-lighter as
+  two colours over a dimmed original. "95.9% darker with a thin lighter band at
+  the collar" is a claim about the effect; "mean 4.03/255" is not. The map also
+  proves the untouched regions really are untouched.
+
+### State what your test could not cover
+
+The Lens Studio preview library's people span roughly luma 0.42-0.56. It has no
+genuinely deep-skin subject (~0.15-0.25) and no very fair one. A lens whose
+effect depends on subject luminance - anything multiplicative, anything with a
+darkness-dependent blend - is therefore **not** validated across real skin tones
+by testing on the bundled previews, however many of them you use. Say so in the
+lens notes rather than implying full coverage.
+
+## A skin effect will hit teeth and eyes hardest - check them first
+
+`body - garment - hair` is not skin. It still contains **enamel, sclera, lips and
+gums**, and a multiplicative skin effect does not treat them gently - it treats
+them WORST. A multiply toward a colour moves a pixel in proportion to how bright
+it already is, and enamel and sclera are the brightest things on a face. One
+measured case: a tan lens shifted teeth -35.8 luma and sclera -26.7 while moving
+the cheek it was aimed at by +1.0 - roughly 36x harder on teeth than on skin.
+
+This is the same luminance-proportional-authority property that makes a multiply
+too WEAK on dark skin, showing up at the other end of the range. If a lens has
+one problem it usually has both, so check both ends.
+
+**Neither brightness nor saturation alone will separate enamel from skin.**
+Measured across three subjects: eye-region saturation (0.354-0.497) overlapped
+skin (0.324-0.640), and on one subject the forehead was *less* saturated than the
+eye region. Brightness alone fails the other way - a lit fair forehead is as
+bright as enamel.
+
+The **pair** separates cleanly, because at comparable luma enamel and sclera sit
+near 0.28-0.30 saturation where skin sits at 0.43+:
+
+```glsl
+float mxC = max(cam.r, max(cam.g, cam.b));
+float mnC = min(cam.r, min(cam.g, cam.b));
+float satC = (mxC - mnC) / max(mxC, 0.001);
+float lumC = dot(cam.rgb, vec3(0.299, 0.587, 0.114));
+float enamel = smoothstep(0.58, 0.74, lumC) * (1.0 - smoothstep(0.26, 0.40, satC));
+skinMask = skinMask * (1.0 - enamel);
+```
+
+Two things this gets right for free: lips and gums are saturated, so they keep the
+effect as they should; and specular highlights on skin are bright and neutral, so
+they are partly spared - which is arguably correct, since a highlight is light
+rather than skin colour, and tinting it is part of what makes a filter look
+painted on.
+
+Verify on a SMILING subject with a still source. A closed-mouth idle clip cannot
+show the defect at all, and on video two runs sampled at different moments will
+put lips where you think teeth are - one such cross-run comparison reported the
+fix had made teeth *worse* when it had not.

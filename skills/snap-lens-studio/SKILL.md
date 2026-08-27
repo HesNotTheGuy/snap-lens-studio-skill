@@ -275,6 +275,127 @@ samples (paint masks, feedback loops, mirrors) hits ALL of these:
   or feedback-loop wiring MUST be re-verified after a full restart (publish loads
   from disk, so a working live preview is necessary but not sufficient).
 
+## Silent failures in custom code-node shaders — verified the hard way, Aug 2026
+
+A custom code node that fails to compile produces **no magenta, no console error
+and no thrown exception**. The material silently falls back and the Lens keeps
+rendering while quietly doing nothing.
+
+**The detector — run it after every scripted shader edit:**
+
+```js
+material.passInfos[0].getPropertyNames()
+// healthy → the real parameter list
+// dead    → exactly ["mainColor"]
+```
+
+A failed compile is **cached**, so refreshing will not clear it. Open a different
+project and reopen this one.
+
+**What kills a shader silently**
+
+| cause | note |
+|---|---|
+| A **reserved GLSL keyword** used as a variable name | `flat`, `sample`, `filter`, `input`, `output`, `layout`, `varying`, `attribute`, `uniform`, `precision`, `invariant`, `discard`, plus the memory qualifiers `coherent`, `volatile`, `restrict`, `readonly`, `writeonly` |
+| A **backslash anywhere** in a spliced body | scripted edits that write `//` comments into a YAML block scalar can emit `\` and break the parse |
+| Calling a helper the harness does not declare | a helper present in one project's preamble is not present in another's |
+| int/float mixing | `pow(x, 3)` instead of `pow(x, 3.0)` |
+
+### mediump precision — legal code, wrong pixels
+
+A custom code node is **not guaranteed `highp`**. Desktop preview is, so none of
+this reproduces on a workstation; assume it on device.
+
+- **A literal outside the precision's range is undefined.** `float best = 1.0e9;`
+  as a nearest-neighbour sentinel: GLSL ES guarantees only about 2^14 and fp16
+  caps at 65504. Derive the sentinel from the metric's real upper bound instead.
+- **Non-representable constants shift `floor()`.** `floor(k * 0.2)` for an
+  every-fifth test: 0.2 is not representable in binary, so at `k = 25` the product
+  is 4.9987793 in fp16, `floor` drops to 4, and the case silently never fires at
+  exactly the setting a user reaches by turning the control up. Add a small
+  epsilon and justify why it cannot promote a wrong case.
+- **Hash helpers overflow into NaN.** `fract(sin(dot(p, vec2(127.1, 311.7))) * k)`
+  with `p` in pixel coordinates reaches ~660,000 — far past mediump — so
+  `sin(inf) = NaN`, and because `NaN * 0 = NaN` the result poisons the entire
+  frame, not just the intended region. Bound the input inside the helper itself:
+  `dot(mod(p, 289.0), vec2(127.1, 311.7))`. One edit fixes every call site, and
+  inputs already below the modulus are bit-identical.
+
+## Controls that are alive in code and dead on screen
+
+A control can read perfectly in source and still do nothing a user can perceive.
+Three distinct causes, none of which code review finds:
+
+**1. A threshold against an ABSOLUTE value has a subject-dependent usable range.**
+An effect that swept a threshold against a per-pixel selector built from raw
+luminance worked on bright subjects and was dead on dark ones: the selector never
+rose high enough for the threshold to enter range until the control was ~58% of
+the way up, so the bottom half did nothing — and *how much* was dead depended on
+the subject. Normalising luminance through a fixed window is **not** a fix; a
+subject occupying a narrow slice of the range still compresses into a fraction of
+0..1. Drive selection from a quantity that is uniformly 0..1 for every subject (a
+hash is), and use the absolute value only as a small bias.
+
+**2. A MULTIPLY has luminance-proportional authority.** An effect applied as
+`col * tint` produces a delta that scales with how bright the subject already is.
+Measured across subject luminance 0.06–0.67, one such effect varied 11× in
+strength and fell below the visible threshold at the dark end — it simply did less
+for some users than others. Blend toward an **additive** term as the input
+darkens; additive authority does not vanish as colour approaches zero. Keep that
+term luma-neutral (+R, ~0 G, −B) where it must add warmth without reading as
+lightening.
+
+**3. min/max over a THRESHOLDED scan is a discrete measurement.** Locating a
+subject by scanning N samples and taking min/max quantises the answer to 1/N, and
+produces three symptoms at once:
+- a **cliff** — the subject leaves the scan rows and the effect vanishes entirely
+- **banding** — a whole range of subject sizes returns the identical answer
+- **popping** — a sub-1% subject movement flips the result by tens of percent, so
+  the control cannot be held at a setting and the effect jitters on live video
+
+Fix all three with **weighted moments**: use the mask value itself as the weight
+and compute a centroid and standard deviation over one grid.
+
+```glsl
+// continuous in the input: no threshold, no seed row, no lattice
+float w = 0.0, sx = 0.0, sxx = 0.0;
+for (int i = 0; i < N; i++) {          // constant bounds, always
+    float m = clamp(mask.sample(uv_i).r, 0.0, 1.0);
+    w += m;  sx += m * x_i;  sxx += m * x_i * x_i;
+}
+float cx = sx / max(w, 0.0001);                       // centre
+float sd = sqrt(max(sxx / max(w, 0.0001) - cx * cx, 0.0));
+float halfWidth = sd * 1.85;   // sd of a filled ellipse ≈ radius/2
+```
+
+**The test that finds all three: render the control's extremes and diff them.**
+Reading the shader catches none of them, because the code looks reasonable in
+every case. A mean absolute difference below roughly **5/255** between a control's
+two ends means the control is decorative — one real example measured 4.8/255
+between its extremes and was rewritten to drive a different quantity entirely.
+
+## Testing traps that produce false results
+
+- **A still-image preview source freezes time and redraw.** Shader-clock
+  animation, runtime parameter writes and animated grain all appear **dead** while
+  a script readback shows the writes landing correctly. Verify anything animated
+  or interactive against a **video source or a device**, never a still.
+- **"TypeScript is not compiled" renders as a perfect no-op.** A freshly opened
+  project can log this; the Lens then never runs, so no material parameters are
+  ever set and the preview looks exactly like a broken shader. Recompile first,
+  and give every Lens a `print()` start line naming its bound inputs — **no prints
+  means the Lens is not running, and the shader is not the suspect.**
+- **A bare `TapEvent` under `touchBlocking = true` can receive nothing.** Bind
+  `TouchStartEvent` as well behind an idempotent handler, or do not claim touches
+  on a tap-only Lens (a tap has no direction, so there is nothing to protect from
+  the carousel).
+- **Log collection that resets the Lens** wipes interaction state before it
+  collects. To observe output after an injected gesture, read the log file
+  directly instead.
+- **Editing a project file while the project is OPEN loses the edit.** The editor
+  writes its in-memory copy back on save, silently discarding the change. Edit
+  project-level files only while the project is closed, then reopen.
+
 ## Glossary
 
 - **Face vs World Lens** — front-camera vs rear-camera AR.
