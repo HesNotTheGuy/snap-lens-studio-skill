@@ -46,7 +46,7 @@ model, and which features silently do nothing. Decide this first:
 
 | Target | Lens Studio version | Notes |
 | --- | --- | --- |
-| **Snapchat** (Face / World Lens) | current mainline — **5.23.x** (5.23.1, Aug 5 2026) | file-size/RAM/FPS budgets; `RemoteServiceModule` for approved APIs |
+| **Snapchat** (Face / World Lens) | current mainline — **5.23.x** (5.23.2, Aug 17 2026) | file-size/RAM/FPS budgets; `RemoteServiceModule` for approved APIs |
 | **Spectacles (2024)** | **pinned to 5.15.x** (5.15.4) — *not* mainline | thermal/power budget plus a [≤ 25 MB published-Lens cap](https://developers.snap.com/spectacles/get-started/start-building/publishing-lens); SIK/Sync Kit; `InternetModule` (open `fetch`) |
 | **Camera Kit** (your own iOS/Android/Web app) | pinned per a **drifting LS↔SDK matrix** — re-check at build | some Lens features are unavailable: Remote Service–enabled Lenses, Licensed Sounds, Scan, VoiceML/TTS, Multi-User, Spatial Persistence. **Ray Tracing: unsupported on Android, supported on iOS.** **Bitmoji IS available**, marked "limited compatibility" — see `interactivity-audio-text-ui-integrations.md` |
 
@@ -101,6 +101,7 @@ strings, numeric budgets, component names) rather than answering from memory.
 | UI, text, audio, tween/animation, multiplayer (Connected Lenses), networking, Camera Kit, Spectacles | `references/interactivity-audio-text-ui-integrations.md` |
 | Asset/texture import pipeline, physics, version control/collaboration, testing & debugging | `references/assets-physics-and-collaboration.md` |
 | File-size/RAM/FPS budgets, profiling, optimization, publishing, review policy | `references/performance-and-publishing.md` |
+| Changelog / Grok↔Claude↔GitHub sync (read before editing this skill) | `CHANGELOG.md` |
 
 ## Snapchat screen furniture — lens-UI safe zones (device-verified, Jul 2026)
 
@@ -199,6 +200,31 @@ source before trusting it.
   `OnAwake` instead of `OnStart`.
 - **Spectacles push breaks after a Lens Studio update** → you left the 5.15.x pin.
 
+- ⛔ **MCP/Editor API — `setEmptyProject()` + `openProject()` hard-crashes LS
+  (5.23.1, verified Aug 2026; still treat as live on 5.23.2).** Do **not** use
+  `setEmptyProject()` as a "force reimport" after disk edits, and do **not**
+  chain empty→open in one `ExecuteEditorCode` body. Race: transaction still
+  holds `AssetImportMetadata` after storage is torn down →
+  `Failed attempt to access AssetImportMetadata … in removed storage` →
+  `Stream was removed while group is held!` → `ES_ASSERT: (false)` → app dies
+  (MCP drops, "Report an Issue" on relaunch). **Do instead:** stay on the open
+  project and hot-reload GLSL via preview refresh; or park on another *real*
+  `.esproj` (not empty), edit disk, reopen in a **separate** tool call after
+  settle. Never `importExternalFile*` a path already in the open project
+  (creates `codeNode 2` duplicates + stale meta). Full write-up:
+  `references/fundamentals-and-workflow.md` § MCP / Editor API.
+- ⚠️ **Lens icons — full-bleed squares (no baked circle).** Snapchat still
+  **circle-crops** every carousel button; you cannot ship free-form shapes. What
+  *does* pop is a **320×320 full-bleed** PNG: color to every edge, **no** white
+  margins, **no** pre-drawn circle in the art. **Hook recipe (MCP):**
+  `metaInfo.setIcon(path)` (writes `Cache/icon.png`, **do not** `project.save()`)
+  → patch `.esproj` `iconHash` = MD5(`Cache/icon.png`) on disk → **reopen the
+  project** (park on another real `.esproj`, then open this one — never
+  `setEmptyProject`) so Project Settings re-reads the hash. Gate:
+  `isIconSet === true` and `iconPath` ends with `Cache/icon.png`. Save after
+  the hash patch **wipes** `iconHash` and restores the default grey icon. Full
+  recipe: `references/fundamentals-and-workflow.md` § Lens icons.
+
 ## Render-to-texture (off-screen camera) traps — verified the hard way, Jul 2026
 
 Any pipeline where a camera renders into its own RenderTarget that another pass
@@ -238,12 +264,13 @@ samples (paint masks, feedback loops, mirrors) hits ALL of these:
   input), geometry size is free: OVERSIZE the quad's anchors hugely (e.g.
   ±4 instead of ±1) so it rasterizes across the entire RT under any aspect
   disagreement. Screen-position-driven shaders are immune to quad geometry.
-- **Editing a .graphShader while Lens Studio runs breaks its materials.** The
-  material re-imports against a stale pass: editor property panels still LOOK
-  fine, but the pass renders nothing (effect silently dead). Recovery: save the
-  project and restart Lens Studio (project open re-imports in dependency order);
-  alternatively make a real content change to the .mat after the graph
-  recompiles. Prefer staging shader edits on disk while LS is closed.
+- **Editing a .graphShader while Lens Studio runs can break materials** (structural
+  graph edits). Property panels still LOOK fine, but the pass may render nothing
+  (compiled `Cache/**/codeNode.glsl` fragment `main()` empty). Recovery: restore a
+  known-good graph scaffold, then patch only the GLSL body; prefer
+  `PreviewPanelTool refresh` for code-node string edits (those *do* hot-reload).
+  Do **not** recover with `setEmptyProject()` / chained `openProject` — that
+  crashes LS (see Cross-cutting gotchas).
 - **Shader math that depends on aspect** (round brushes, circles) should take
   the aspect as a script-fed uniform from a screen camera, not derive it from
   the RT's `texSize` — the RT aspect and the display aspect can differ.
@@ -395,6 +422,10 @@ between its extremes and was rewritten to drive a different quantity entirely.
 - **Editing a project file while the project is OPEN loses the edit.** The editor
   writes its in-memory copy back on save, silently discarding the change. Edit
   project-level files only while the project is closed, then reopen.
+- **Person-attached effects that look right on `Idle.mp4` are not verified.** That
+  clip is a tight selfie. Gate on `Images/Idle/Person 1.jpg` … `Person 6.jpg`
+  (studio portraits, face lower in the frame). See
+  `references/world-body-and-tracking.md` (hung objects).
 
 ## Glossary
 

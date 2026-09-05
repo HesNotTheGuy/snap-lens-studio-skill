@@ -84,7 +84,7 @@ were adversarially re-verified against live documentation in July 2026; correcti
 Face Swap's platform support, the existence of `InteractionComponent.onTap`, and the Spectacles
 published-Lens size cap.
 
-Facts are current as of **Lens Studio 5.23.1** (August 2026). Lens Studio ships roughly monthly, so
+Facts are current as of **Lens Studio 5.23.2** (August 2026). Lens Studio ships roughly monthly, so
 the skill deliberately teaches verifying against the live docs over trusting remembered numbers —
 treat the version pins as perishable, not permanent.
 
@@ -116,7 +116,7 @@ Past corrections, so the shape is clear: the face-landmark section taught the de
 Camera Kit" was simply false. `scene.liveOverlayTarget` was attributed to the wrong API entirely.
 
 Sometimes the correction is that **Snap's own pages disagree with each other**. The Spectacles (2024)
-version pin is stated on the download surface and repeated on every release page through 5.23.1 —
+version pin is stated on the download surface and repeated on every release page through 5.23.2 —
 while the Spectacles *setup docs* are headed "Download latest Lens Studio" and name no version at
 all. Follow the docs literally and you install a build the 2024 hardware won't run. The skill now
 says which surface to trust and why, because "check the docs" isn't useful advice when the docs are

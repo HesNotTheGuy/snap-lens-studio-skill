@@ -6,7 +6,7 @@ Lens Studio is Snap's free desktop authoring tool (Windows/macOS) for building *
 
 Lens Studio covers AR tracking (face/body/hand/world), animation, audio, physics, scripting (JavaScript/TypeScript), **SnapML** (custom ML models), UI, Bitmoji/avatars, generative AI, and an **Asset Library** of reusable prebuilt assets. You publish to Snapchat as **Face Lenses** (front camera) or **World Lenses** (rear camera), or deploy through **Camera Kit** into your own apps. ([overview](https://developers.snap.com/lens-studio/overview/getting-started/lens-studio-overview))
 
-**Current version: Lens Studio 5.23.1** (released 2026-08-05; 5.23.0 on 2026-07-28). The 5.23 line is framed around **SPECS 27**, so check the Spectacles firmware note before updating if you ship to glasses. Headline **5.23** additions: 3D Hand Mesh; Custom Texture Tracking for hands; **SVG import → Vector Composite** assets and **SVG Text** (5.23.1, per-run weight/italic/letter-spacing); Variable Fonts; Vertex Snapping (hold `V`) and 3D Grid Snapping (`G`); Mix To Snap on Video Texture; CRISP compression for Gaussian Splatting (~14x smaller); Copy/Paste Component Properties; a **Script Update Order** panel. Preceding 5.22 additions ([versioned release notes](https://ar.snap.com/lens-studio-v5)):
+**Current version: Lens Studio 5.23.2** (released 2026-08-17; 5.23.0 on 2026-07-28). The 5.23 line is framed around **SPECS 27**, so check the Spectacles firmware note before updating if you ship to glasses. Headline **5.23** additions: 3D Hand Mesh; Custom Texture Tracking for hands; **SVG import → Vector Composite** assets and **SVG Text** (5.23.2, per-run weight/italic/letter-spacing); Variable Fonts; Vertex Snapping (hold `V`) and 3D Grid Snapping (`G`); Mix To Snap on Video Texture; CRISP compression for Gaussian Splatting (~14x smaller); Copy/Paste Component Properties; a **Script Update Order** panel. Preceding 5.22 additions ([versioned release notes](https://ar.snap.com/lens-studio-v5)):
 - **CLAD (Closed Loop Agentic Development)** — an agentic framework that can "one-shot an entire Lens" or invoke individual skills/agents to prototype, iterate, test, debug, move preview panels, check runtime state, optimize, and write Editor/Plugin code.
 - **Binary graph files auto-convert to a new YAML format** on project load/import in 5.22+ (text-editable by external editors or AI); old binary graph-editor formats are deprecated.
 - **Live JavaScript debugging** with breakpoints (experimental) — supported clients per the 5.22 notes: "VS Code built-in debugger, Cursor built-in debugger, or Any other VS Code fork" — **5.23 adds IntelliJ and WebStorm**, console forwarding, and editing variables while paused; scoped to SPECS contexts (SPECS 27 device, "No Simulation" and "Horizontal" preview panels). Plus **LEAF (Lens Evaluation & Automation Framework)** — a TypeScript integration-testing framework for SPECS Lenses: write test scenarios that simulate user actions, then assert against live scene state (see `assets-physics-and-collaboration.md`). ([v5 page](https://ar.snap.com/lens-studio-v5))
@@ -14,7 +14,7 @@ Lens Studio covers AR tracking (face/body/hand/world), animation, audio, physics
 
 > **Spectacles (2024) version pin — critical gotcha, and Snap's own pages will mislead you.** To develop for Spectacles (2024) use the pinned **Lens Studio 5.15.x line** (currently **5.15.4**), *not* the 5.2x mainline: "Lens Studio 5.15.x is the last anticipated Lens Studio update series for Spectacles (2024) and should be used for all subsequent Spectacles releases until further notice."
 >
-> ⚠️ **The trap:** the Spectacles setup docs are headed **"Download latest Lens Studio"** and name no version — follow that literally and you land on 5.2x, which the 2024 hardware does not run. The pin is stated on the *download* surface, not the *docs* surface. Verified 2026-08-10: [ar.snap.com/download](https://ar.snap.com/download) carries "The following is for SPECS 27, and not Spectacles (2024). Spectacles (2024) users should continue using Lens Studio 5.15.xx," and lists 5.23.1's Supported Platforms as **Snapchat / SPECS 27 / Camera Kit** — Spectacles (2024) is absent. [ar.snap.com/spectacles](https://ar.snap.com/spectacles) separately serves 5.15.4 with Supported Platforms **Snapchat / Spectacles (2024) / Camera Kit**.
+> ⚠️ **The trap:** the Spectacles setup docs are headed **"Download latest Lens Studio"** and name no version — follow that literally and you land on 5.2x, which the 2024 hardware does not run. The pin is stated on the *download* surface, not the *docs* surface. Verified 2026-08-10: [ar.snap.com/download](https://ar.snap.com/download) carries "The following is for SPECS 27, and not Spectacles (2024). Spectacles (2024) users should continue using Lens Studio 5.15.xx," and lists 5.23.2's Supported Platforms as **Snapchat / SPECS 27 / Camera Kit** — Spectacles (2024) is absent. [ar.snap.com/spectacles](https://ar.snap.com/spectacles) separately serves 5.15.4 with Supported Platforms **Snapchat / Spectacles (2024) / Camera Kit**.
 >
 > Framework docs saying "Lens Studio v5.15 or later" are stating a **floor, not a ceiling** — the only compatibility chart in the Spectacles docs tops out at v5.15. Before upgrading past 5.15.x, confirm on [ar.snap.com/spectacles](https://ar.snap.com/spectacles) that Snap names a newer build for this device. ([compatibility](https://support.spectacles.com/hc/en-us/articles/27749036143380-Compatibility))
 
@@ -89,6 +89,79 @@ Key Camera properties: **Layers** (a camera renders only objects whose `layer` i
 - Camera `renderLayer` rejects a raw layer-set mask through generic setProperty (use the Editor API `LayerSet`), while SceneObject layers do accept `setLayers(mask)`.
 - Knowledge-base and generative tools (`QueryLensStudioKnowledgeBase`, `GenerateLensIcon`, …) require being **signed into Snapchat inside Lens Studio** (My Lenses → Login); otherwise they fail with auth/connection errors.
 - `PreviewPanelTool action:screenshot` needs LS **5.23+**; on 5.22 use `CapturePanelScreenshotTool` with `pluginId: Snap.Plugin.Gui.PreviewPanel`. Changing the preview source can leave playback **paused** — send `resume` after `setConfig`, and prove motion by diffing two captures rather than trusting one frame.
+
+- ⛔ **CRASH (LS 5.23.1, Aug 2026): never use `setEmptyProject()` as a "force reimport / reload" trick, and never chain `setEmptyProject()` + `openProject()` in one `ExecuteEditorCode` call.** Verified hard crash: after rapid empty→reopen, LS asserts while a transaction still holds refs into torn-down project storage:
+
+  ```
+  Failed attempt to access AssetImportMetadata with Uid <graphShader-meta-uid> in removed storage
+  Stream was removed while group is held!
+  ES_ASSERT: (false)
+  ```
+
+  Symptom for the user: Lens Studio dies mid-agent turn, MCP port 50040 drops, next launch shows "Report an Issue" / "Previous session crash detected". Logs: `%LOCALAPPDATA%\Snap\Lens Studio\logs\LensStudioLog-*.txt` ends with that `ES_ASSERT`.
+
+  **Safe alternatives (prefer in order):**
+  1. **Stay on the open project.** Patch only the GLSL string inside `codeNode.graphShader`, then `PreviewPanelTool action:refresh`. Code-node GLSL hot-reloads without a project switch.
+  2. **Park on a different *real* project** (another `.esproj` you keep as a parking lot — not empty), edit files on disk for the closed project, then `openProject` back. Use **separate** tool calls with time for the UI event loop to settle; do not chain unload+load in one async body.
+  3. If the human must restart LS, tell them — do not script a crashy reload.
+
+  **Also do not** call `assetManager.importExternalFileAsync` / `importExternalFile` on a path that is **already** an asset inside the open project (e.g. re-importing `Assets/Glass Blocks/codeNode.graphShader` to "force recompile"). That creates duplicates (`codeNode 2.graphShader`), leaves stale `AssetImportMetadata` UIDs, and participates in the same removed-storage race on the next project switch.
+- **Diagnosing "effect does nothing" before thrashing reloads:** check the compiled `Cache/**/codeNode.glsl` fragment `main()`. An empty `void main() {}` means the code-node graph failed to emit fragment code (bad graph structure or failed compile) — fix the graph (or restore a known-good scaffold) rather than cycling `setEmptyProject`/`openProject`. Structural `.graphShader` edits can break materials (property panels still LOOK fine, pass renders nothing). GLSL-string edits to a code node **do** hot-reload via preview refresh.
+
+## Lens icons — full-bleed squares that stick (verified Aug 2026, LS 5.23)
+
+Snapchat's carousel still draws a **circular frame** around every lens button. You cannot ship a free-form non-circle UI chrome. What *does* work — and reads as a stronger "square" tile — is **full-bleed art with no pre-drawn circle, no white margins, no letterbox**. Edge-to-edge pixels fill the circle crop; soft vignette / grade fills the corners instead of empty padding.
+
+Docs also allow **transparent PNG** icons with an optional Project Settings **Background** color under the alpha ([Configuring Project Info](https://developers.snap.com/lens-studio/publishing/configuring/configuring-project-info)). Transparency is good for cutout glyphs + solid fill; for grade/film looks prefer **opaque full-bleed RGB**.
+
+### Art rules (must)
+
+| Do | Don't |
+| --- | --- |
+| **320×320** PNG (or larger square, then downscale) | Rectangle / letterboxed canvas |
+| **Full bleed** — color/texture to every edge | White/black ring, circle mask, rounded-rect "button" in the art |
+| High-contrast thumbnail that reads at ~64 px | Tiny centered motif on empty field |
+| One signature look matching the lens | Props/logos/text that fight the carousel circle |
+
+### Why icons "don't hook" in Project Settings / Publish
+
+Critical mechanics (measured LS 5.23):
+
+1. **`metaInfo.setIcon(path)`** writes `Cache/icon.png` and may flip `isIconSet` **in the current session**, but it **does not register the icon into Project Settings** for the open project by itself.
+2. **`.esproj` `iconHash`** is what LS re-reads **on project open**. Patch it on disk to MD5 of `Cache/icon.png`.
+3. **You must reopen the project** after the hash patch so metaInfo is rebuilt from the `.esproj`. Until reopen, Project Settings still shows "Import Image" even if `setIcon` just ran.
+4. **`project.save()` clears `iconHash` to `""`.** Empty hash → next open falls back to `:/Model/Icons/metainfo/lens_default_icon_320.png` and `isIconSet: false`. **Do not save after patching the hash.**
+
+### Durable MCP / agent recipe (order matters)
+
+```
+1. Author 320×320 full-bleed PNG (no circle, no margins)
+   → Assets/Icons/lens_icon_<name>_320x320.png
+   → also copy to project root icon.png and Cache/icon.png
+
+2. Project open on this lens — ExecuteEditorCode:
+     project.metaInfo.setIcon(
+       new Editor.Path("<abs>/Assets/Icons/lens_icon_<name>_320x320.png")
+     );
+     // writes Cache/icon.png; do NOT project.save()
+
+3. Python on disk (BOM-less .esproj write):
+     iconHash = md5(Cache/icon.png)
+     patch .esproj:  iconHash: <32-hex>
+
+4. REOPEN the project (park on another REAL .esproj, then open this one).
+     NEVER setEmptyProject() — hard crash.
+
+5. Confirm: metaInfo.isIconSet === true
+            metaInfo.iconPath ends with .../Cache/icon.png
+
+6. Triad before publish:
+     md5(Assets/Icons/…) == md5(Cache/icon.png) == iconHash in .esproj
+```
+
+**Never `project.save()` after step 3.** If the human hits Save and the icon disappears, re-run 2→6.
+
+API surface: `project.metaInfo` → `setIcon`, `isIconSet`, `iconPath`, `lensName`, …
 
 ## Go deeper
 

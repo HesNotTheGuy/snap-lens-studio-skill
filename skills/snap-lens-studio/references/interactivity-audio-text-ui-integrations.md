@@ -2,7 +2,7 @@
 
 This reference covers the layer of a Lens that turns a static effect into something a user can touch, hear, share, and connect to the outside world: screen-space UI, text (2D and 3D), audio and audio-reactive effects, animation and tweening, multiplayer via Connected Lenses, and the network paths (approved Remote APIs, InternetModule, Remote Service Gateway) plus the three delivery targets that change what's allowed (Snapchat, Camera Kit, Spectacles). The through-line worth internalizing: **the same Lens behaves differently depending on where it runs.** Open-internet `fetch` works on Spectacles and Camera Kit but not in a published Snapchat Lens; a long list of APIs silently no-op inside Connected Lenses; and Spectacles and Camera Kit are each pinned to specific Lens Studio versions. Design for the target, not just the feature.
 
-Version baseline: latest Lens Studio is **5.23.1** (Aug 5, 2026), preceded by 5.23.0 (Jul 28, 2026) ([download](https://ar.snap.com/download)).
+Version baseline: latest Lens Studio is **5.23.2** (Aug 17, 2026), preceded by 5.23.0 (Jul 28, 2026) ([download](https://ar.snap.com/download)).
 
 ## Table of contents
 - [UI: screen space, Screen Transform, widgets](#ui-screen-space-screen-transform-widgets)
