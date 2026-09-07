@@ -176,7 +176,10 @@ reach and frame rate.
 
 The reference files are verified against live docs, but a few facts are
 **explicitly flagged as unconfirmed** (e.g. RAM 120 vs 150 MB across pages,
-hand-gesture count, a 320×320 icon claim, a Face Retouch render-order tip). Treat
+hand-gesture count, a Face Retouch render-order tip). The 320×320 icon size is
+**not** an open question any more: Snap's docs never state it as a requirement,
+but it is Lens Studio's own default icon size and the MCP icon recipe is verified
+at it (`references/fundamentals-and-workflow.md`). Treat
 flagged items as open questions — re-confirm against the official doc before
 asserting them, and prefer the doc link over a remembered number. When installing
 third-party Custom Components / Asset Library items, read the component's real
@@ -199,6 +202,10 @@ source before trusting it.
 - **Null reference on startup** → you wired cross-component references in
   `OnAwake` instead of `OnStart`.
 - **Spectacles push breaks after a Lens Studio update** → you left the 5.15.x pin.
+- **MCP client shows `401`, `Tool not found`, or no lens-studio tools at all** →
+  three different failures with different fixes (rotated token / unclicked plugin
+  trust dialogs / client started before the server). Triage in
+  `references/fundamentals-and-workflow.md` § MCP / Editor API.
 
 - ⛔ **MCP/Editor API — `setEmptyProject()` + `openProject()` hard-crashes LS
   (5.23.1, verified Aug 2026; still treat as live on 5.23.2).** Do **not** use
@@ -295,9 +302,10 @@ samples (paint masks, feedback loops, mirrors) hits ALL of these:
   camera's `renderLayer`** to a render-almost-everything mask — it then renders your
   new RT pass too and crushes the scene background to black. After any scene surgery,
   re-assert each post-effect camera's `renderLayer` to EXACTLY its own effect layer.
-- **Contra the note above: GLSL-string edits to a code node DO hot-reload** via
-  `PreviewPanelTool refresh` (no restart) — verified repeatedly. Live
-  `asset-graphql`/Editor-API property edits also apply on refresh. Only new asset
+- **What does and does not hot-reload.** GLSL-string edits to a code node DO
+  hot-reload via `PreviewPanelTool refresh` (no restart) — verified repeatedly —
+  and so do live `asset-graphql`/Editor-API property edits; *structural* graph
+  edits (the bullet above) do not. Only new asset
   *files* and final persistence need `project.save()`, and any hand-authored assets
   or feedback-loop wiring MUST be re-verified after a full restart (publish loads
   from disk, so a working live preview is necessary but not sufficient).

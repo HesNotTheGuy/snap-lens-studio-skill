@@ -84,7 +84,7 @@ were adversarially re-verified against live documentation in July 2026; correcti
 Face Swap's platform support, the existence of `InteractionComponent.onTap`, and the Spectacles
 published-Lens size cap.
 
-Facts are current as of **Lens Studio 5.23.2** (August 2026). Lens Studio ships roughly monthly, so
+Facts are current as of **Lens Studio 5.23.2** (August 2026; re-verified against the live docs on 2026-09-07). Lens Studio ships roughly monthly, so
 the skill deliberately teaches verifying against the live docs over trusting remembered numbers —
 treat the version pins as perishable, not permanent.
 

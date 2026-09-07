@@ -110,7 +110,6 @@ stretch.addFeature(name); stretch.removeFeature(name); stretch.clearFeatures();
 - **A neutral face is subtly sucked inward** — `LiquifyVisual.intensity` was authored to `0` as "off". It is a coefficient whose identity is **`1.0`**; below 1 warps inward.
 - **`setFeatureWeight` silently does nothing** — the feature name is wrong. The editor default-names features `Feature 0`; resolve real names with `getFeatureNames()` at `OnStart`. Weight must also sit strictly inside `(-0.5, 2)`.
 - **All 51 expression weights read zero with no error** — the Face Mesh object was deactivated. It is the sole provider and must stay active; hide it with a fully transparent Face-only material instead of disabling it.
-- **Expression weights are always zero** — the Face Mesh object was deactivated; it must stay active.
 - **Only one face is affected in a two-person shot** — the cap is **two faces**; duplicate the object and increment **Face Index** (0 = first, 1 = second). The two-face limit and its supported platforms are documented on the page below. [Multiple faces](https://developers.snap.com/lens-studio/features/ar-tracking/face/working-with-multiple-faces)
 - **Assuming an effect ships everywhere** — Eye Color, Face Retouch, and Face Swap all have no Spectacles support (Snapchat + Camera Kit only). Read the badge.
 - **Assuming version compatibility across Spectacles generations** — the 5.2x mainline is SPECS 27 only; Spectacles (2024) stays on 5.15.x, and 5.22's YAML conversion is forward-only.
