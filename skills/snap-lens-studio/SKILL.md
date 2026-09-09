@@ -201,6 +201,11 @@ source before trusting it.
   Android/iOS/Web "limited compatibility".
 - **Null reference on startup** → you wired cross-component references in
   `OnAwake` instead of `OnStart`.
+- **Replaced a code node's whole code string and the frame went pure white** → you dropped
+  `output_vec4 result;` from the declaration block (`getPropertyNames()` shows only
+  `Port_FinalColor…` + `PreviewEnabled`). **Uniforms verified present, constants draw, effect
+  still does nothing** → NaN from a stale or unsampleable texture parameter (`mix(x, NaN, 0.0)`
+  is NaN). Both: `references/materials-rendering-vfx.md` § Code-node failure signatures.
 - **Spectacles push breaks after a Lens Studio update** → you left the 5.15.x pin.
 - **MCP client shows `401`, `Tool not found`, or no lens-studio tools at all** →
   three different failures with different fixes (rotated token / unclicked plugin

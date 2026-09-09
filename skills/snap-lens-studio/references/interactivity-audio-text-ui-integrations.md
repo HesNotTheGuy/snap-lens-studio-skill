@@ -104,6 +104,24 @@ Spectacles (2024) is **pinned to the Lens Studio 5.15.x line**, described as "th
 - **`InternetModule` open-internet `fetch` works on Spectacles** (unlike standard Snapchat Lenses).
 - **Remote Service Gateway (RSG)** — requires **Lens Studio v5.10.1+** and **Spectacles OS v5.062+** ([RSG](https://developers.snap.com/spectacles/about-spectacles-features/apis/remoteservice-gateway)). **Snap-hosted:** DeepSeek (Chat Completions with R1 reasoning) and **Snap3D** (text→3D). **Externally hosted:** OpenAI (Chat Completions, Image Gen/Edit, TTS, Realtime) and Google Generative AI (Gemini, Imagen, Lyria). Setup: install the **Remote Service Gateway** package + **Token Generator** plugin (Windows → Remote Service Gateway Token), then enter per-service tokens in **`RemoteServiceGatewayCredentials`**; tokens are account-scoped and non-expiring. Per LS 5.15.4 notes, RSG now supports **separate tokens per platform** (Snap/Google/OpenAI). Combined with the 5.15.x cap, the effective Spectacles-2024 working range is roughly **5.10.1–5.15.x**.
 
+### Dual Camera (custom component, source-verified on LS 5.23.2, Sep 2026)
+
+The Asset Library custom component **"Dual Camera"** (id `1LuqTdMCONaAiEUhzg36Dq`) installs a TypeScript
+component and a **`Reverse Camera Texture`** asset. Read its source before designing around it: at `onAwake`
+it swaps the *provider inside that texture asset* - a neutral proxy first, then the bundled **mock** texture
+in the editor, the real reverse camera on a supporting device, or its fallback elsewhere - and assigns the
+asset to each placeholder visual's `mainPass.baseTex`. `isSupported` is a Promise: in the editor it resolves
+`!debug` (the "Fallback Preview" toggle), on device `deviceInfoSystem.supportsDualCamera`. `fallbackMode`
+defaults to **MediaPicker, which pops a picker UI on unsupported devices** - set `None` (and handle the
+absence yourself) unless that is what you want.
+
+Measured limit: **binding the Reverse Camera Texture into a graph material's texture parameter and sampling
+it in a code node produced NaN in the preview** - the whole pass dropped and the camera showed through -
+while the same shader with the camera texture bound drew correctly (forced-open composite, mean 96/102/145
+vs the untouched 147/137/135). Show the feed through the component's placeholder path (a standard Image
+material) and mask or composite around that image; do not sample the asset in a code node, at least in
+preview. Device behaviour was not tested.
+
 ## Bitmoji / GenAI Suite / Snap3D
 
 - **Bitmoji** — the **Bitmoji 3D** component is a no-code way to download an avatar for the user, friends, or My AI; **Bitmoji Head** is for face Lenses. Animate via clips, Mixamo, or the **Bitmoji Animation** plugin (which uses AnimationPlayer — the same driver behind the mixer→player migration). The **Bitmoji Suite plugin** adds outfits, **Props**, and animation ([bitmoji 3d](https://developers.snap.com/lens-studio/features/bitmoji-avatar/bitmoji-3d), [bitmoji suite](https://developers.snap.com/lens-studio/features/bitmoji-suite/overview)).

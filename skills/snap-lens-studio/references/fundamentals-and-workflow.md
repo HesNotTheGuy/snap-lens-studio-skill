@@ -113,6 +113,24 @@ Key Camera properties: **Layers** (a camera renders only objects whose `layer` i
   **Also do not** call `assetManager.importExternalFileAsync` / `importExternalFile` on a path that is **already** an asset inside the open project (e.g. re-importing `Assets/Glass Blocks/codeNode.graphShader` to "force recompile"). That creates duplicates (`codeNode 2.graphShader`), leaves stale `AssetImportMetadata` UIDs, and participates in the same removed-storage race on the next project switch.
 - **Diagnosing "effect does nothing" before thrashing reloads:** check the compiled `Cache/**/codeNode.glsl` fragment `main()`. An empty `void main() {}` means the code-node graph failed to emit fragment code (bad graph structure or failed compile) — fix the graph (or restore a known-good scaffold) rather than cycling `setEmptyProject`/`openProject`. Structural `.graphShader` edits can break materials (property panels still LOOK fine, pass renders nothing). GLSL-string edits to a code node **do** hot-reload via preview refresh.
 
+### Verifying a lens over MCP without lying to yourself (5.23.2, Sep 2026)
+
+- **`PreviewPanelTool action:screenshot` with `includeChrome: false` can write a flat white stub** - on one
+  project every chromeless capture was a 5848-byte 720x1280 PNG with extrema 255, while `includeChrome: true`
+  wrote the real panel (324x1806 here, phone screen at rows ~600-1180). Measure the crop mean of every capture
+  before believing it; a stub and a dead shader look identical until you do.
+- **Capture latency:** an injected tap followed by a screenshot lands ~1.2 s later; a `refresh` followed by a
+  screenshot lands after a 2-2.6 s develop sequence has already finished. Nothing shorter than ~1 s can be
+  caught by timing. Give timed lenses a debug input - `//@input float holdProgress = -1.0` that pins the
+  sequence when non-negative, or `debugOpen` for a toggle - and set it with `scene-graphql setProperty` on
+  the ScriptComponent (worked first time), then capture exact frames at 0.03 / 0.15 / 0.45 / 0.8 / 1.0.
+  The script must release cleanly when the input goes back to -1.
+- **`getTapPosition()` is y-down, `screenUV` is y-up**: a portal that opens where the finger is needs
+  `cy = 1.0 - p.y`.
+- An agent verifying through these tools spends turns on tool discovery and on viewing PNGs. Give it exact
+  tool arguments (they are stable within a version), tell it not to view images, and have it print one
+  Python line of per-file size and crop mean instead; a human or a second agent judges the pixels.
+
 ## Lens icons — full-bleed squares that stick (verified Aug 2026, LS 5.23)
 
 Snapchat's carousel still draws a **circular frame** around every lens button. You cannot ship a free-form non-circle UI chrome. What *does* work — and reads as a stronger "square" tile — is **full-bleed art with no pre-drawn circle, no white margins, no letterbox**. Edge-to-edge pixels fill the circle crop; soft vignette / grade fills the corners instead of empty padding.

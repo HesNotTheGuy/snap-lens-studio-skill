@@ -1,6 +1,6 @@
 # Changelog — snap-lens-studio skill
 
-**Stamp:** `2026-09-07.1`
+**Stamp:** `2026-09-09.1`
 
 This file is the sync key for every agent that loads the skill (Grok, Claude, and
 anything cloning from GitHub). Read it **before** editing the skill. If two
@@ -36,11 +36,28 @@ home directories **in the same turn**, then commit, tag with the stamp, and push
 
 ## Known drift (do not ignore)
 
-None as of `2026-09-07.1`. All three copies (Grok home, Claude home, GitHub `main`)
+None as of `2026-09-09.1`. All three copies (Grok home, Claude home, GitHub `main`)
 carry this stamp. Current live pin is LS **5.23.2** (17 Aug 2026, re-verified
 2026-09-07 — no 5.24 exists); Spectacles (2024) remains **5.15.4**.
 
 ## Entries
+
+### 2026-09-09.1 — six-lens batch: three silent code-node deaths, verification harness, Dual Camera
+
+- **Home:** `references/materials-rendering-vfx.md` — three dead-pass signatures with their
+  fixes: missing `output_vec4 result;` (white frame, `Port_FinalColor…` props), reserved word
+  `cast` (`["mainColor"]`), and **NaN from a stale texture parameter mixed at weight 0** (healthy
+  props, nothing drawn). Diagnose-by-painting method. `pow(neg)` / reversed `smoothstep`.
+- **Home:** `references/fundamentals-and-workflow.md` — `includeChrome:false` screenshots can be
+  white stubs; ~1.2 s tap-to-capture latency; `holdProgress` / `debugOpen` debug inputs set via
+  `scene-graphql setProperty` for exact frames; `getTapPosition()` y-down vs `screenUV` y-up.
+- **Home:** `references/interactivity-audio-text-ui-integrations.md` — Dual Camera component,
+  source-verified: provider swap inside the Reverse Camera Texture asset, `isSupported`
+  semantics, MediaPicker default; **a code node cannot sample that texture in preview (NaN)** —
+  use the placeholder path.
+- `SKILL.md`: two router lines in cross-cutting gotchas.
+- Not a lesson: helper functions before `main()` were inlined during the hunt; they were not the
+  cause and remain untested either way.
 
 ### 2026-09-07.1 — docs re-verification + review fixes
 

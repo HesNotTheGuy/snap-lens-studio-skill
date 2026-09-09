@@ -177,6 +177,41 @@ into will ship. Exercise the control through its full cycle during review, on a
 video source - and note that a still preview freezes both time and redraw, so
 anything animated or interactive must never be validated on one.
 
+## Code-node failure signatures from a six-lens batch (LS 5.23.2, Sep 2026)
+
+Three different dead states, each with a different signature and a different fix. All three are
+silent: no magenta, no log line, and the script's start `print` still runs.
+
+| what you see | `passInfos[0].getPropertyNames()` | cause |
+|---|---|---|
+| **pure white** frame (255,255,255 measured) | `["Port_FinalColor_N004", "PreviewEnabled"]` - no param or texture properties | the code string was replaced without `output_vec4 result;` in the declaration block; the node has no output port |
+| camera passthrough, nothing happens | `["mainColor"]` | a GLSL compile error - here a variable named `cast`, a reserved-for-future GLSL ES word |
+| camera passthrough, nothing happens, **uniforms verified present** | healthy list (`PreviewEnabled, baseTex, baseTexSize, paramA, paramB` on the world harness) | NaN: the pass ran and every fragment was dropped |
+
+- **Keep the output declaration with the inputs.** When splicing a whole code string, the block is
+  `input_… ; … ; output_vec4 result;` then `void main()`. Dropping the output line is the white-frame
+  signature above. Grep every parent before assuming the declaration list.
+- **Reserved words that compile to `["mainColor"]`** and are easy to reach for as names: `cast`, `class`,
+  `union`, `enum`, `typedef`, `template`, `this`, `goto`, `inline`, `noinline`, `volatile`, `public`,
+  `static`, `extern`, `external`, `interface`, `long`, `short`, `half`, `fixed`, `unsigned`, `superp`,
+  `sizeof`, `namespace`, `using`, `common`, `partition`, `active`, `asm`, `packed`, `resource`, `patch`,
+  `subroutine`, `precise`, plus the ones in SKILL.md. Grep the body for `\b(float|vec[234]|int)\s+<word>\b`
+  before installing. (Helper functions before `main()` were suspected in the same batch and inlined; that
+  was not the cause and is not established either way - the batch shipped inlined.)
+- **NaN looks exactly like "the effect does nothing".** `mix(x, y, 0.0)` still evaluates `y * 0.0`, and
+  `NaN * 0.0` is NaN, so one NaN source poisons every pixel and the GPU drops the write - the pass
+  underneath (the camera) shows through. The source here was a texture parameter a fork inherited
+  pointing at a render target nothing renders any more (stale GPU memory), sampled and mixed with
+  weight 0. Rule: **never leave a texture parameter bound to something the scene no longer renders**;
+  from script, bind it to the camera texture (`pass.maskTex = pass.baseTex`) whenever it is unused.
+  Two more NaN makers to avoid: `pow(x, y)` with `x < 0` (square by multiplying instead) and
+  `smoothstep(a, b, x)` with `a >= b` (live parents get away with it; build ramps with `clamp` instead).
+- **Diagnose by painting, not by reading.** Replace `main()` with `result = vec4(fxA.x, fxA.y, 0.5, 1.0)`
+  and measure the crop mean before and after the control; then paint the geometry with the control
+  forced to a constant; then paint the suspect texture on half the screen. Three such captures localised
+  the NaN above after two blind rewrites had changed nothing. The pattern generalises: when uniforms
+  arrive and constants draw, the remaining suspect is an input you have not painted yet.
+
 ## A curve duplicated in JS and GLSL is NOT the same arithmetic
 
 When the same easing curve exists twice - once in the control script driving a
