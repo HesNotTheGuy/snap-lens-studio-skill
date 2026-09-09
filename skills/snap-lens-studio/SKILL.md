@@ -206,6 +206,16 @@ source before trusting it.
   `Port_FinalColor…` + `PreviewEnabled`). **Uniforms verified present, constants draw, effect
   still does nothing** → NaN from a stale or unsampleable texture parameter (`mix(x, NaN, 0.0)`
   is NaN). Both: `references/materials-rendering-vfx.md` § Code-node failure signatures.
+- **Second-camera feed in the preview:** the Reverse Camera Texture is NaN when sampled in a code
+  node and **empty** when bound to an Image material in the editor. Show it through a circle-masked
+  placeholder Image and bind the package's Mock texture under `deviceInfoSystem.isEditor()`; the
+  real feed only shows on a phone. `references/interactivity-audio-text-ui-integrations.md`
+  § Dual Camera.
+- **Tap-cycled and timed lenses get sent back for two things:** the carousel clip shows nothing
+  (add a first-run tour) and a retake resets the state (persist the last choice). A timed effect
+  must also end on a look worth keeping: a transition whose settled frame was the plain image was
+  cut on review. `references/interactivity-audio-text-ui-integrations.md` § First-run tour,
+  § Persist settings.
 - **Spectacles push breaks after a Lens Studio update** → you left the 5.15.x pin.
 - **MCP client shows `401`, `Tool not found`, or no lens-studio tools at all** →
   three different failures with different fixes (rotated token / unclicked plugin

@@ -74,6 +74,9 @@ Key Camera properties: **Layers** (a camera renders only objects whose `layer` i
 - **Nothing renders / object invisible** → the object's `layer` isn't in the Camera's **Layers** set, the object/parent `enabled` is false, or it's on the wrong Render Target.
 - **UI text blurry** → rendered through a perspective/live camera instead of the orthographic **Overlay Target**.
 - **UI/2D shows in preview but missing from the captured snap** → it's on the **Overlay Target**, which is excluded from final captures by design.
+- **Effect content under a UI camera that must be in the snap** (a masked second-camera window) → give
+  that camera the main Render Target and a `renderOrder` after the post-effect camera (Editor API:
+  `cam.renderTarget = rt; cam.renderOrder = n`); the Overlay Target is capture-excluded. Measured Sep 2026.
 - **Wrong draw order / z-fighting between 3D and 2D** → misconfigured **Render Order** (lower = first) or clashing **Clear Depth**.
 - **Can't pair / push fails** → Snapchat or Lens Studio not on latest; re-scan the Snapcode; force-quit Snapchat.
 - **Preview video shows no face effects** → the clip lacks tracking data, or isn't H.264 MP4 (convert with the FFMPEG command above).

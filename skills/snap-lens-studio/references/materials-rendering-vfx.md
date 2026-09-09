@@ -29,6 +29,12 @@ Everything a Lens draws to the screen passes through this layer: **materials** d
 
 **Render pipeline** — `Camera` (every Lens needs at least one; see the [Camera scripting class](https://developers.snap.com/lens-studio/api/lens-scripting/classes/Built-In.Camera.html)), **Layers** (gate what a Camera renders), **Render Target** (output surface, chainable for multi-pass), scene-config **Live Target** / **Capture Target**, Render Order + Mask Texture, plus Depth Render Target and Device Depth. Source: [Camera](https://developers.snap.com/lens-studio/lens-studio-workflow/scene-set-up/camera).
 
+**Screen-space circle mask (measured Sep 2026)** — `MaskingComponent` clips its children to its
+`ScreenTransform` rect; the Editor API exposes only `cornerRadius` (pixels), so a pixel-square rect
+with `cornerRadius` = half its size is a circle. Animate a hole by rewriting the mask's `anchors` and
+`cornerRadius` from script and counter-scaling the child's anchors so the child stays fixed on
+screen. A masked `Image` is the working way to show a texture a code node cannot sample.
+
 **Particles/VFX** — **VFX Asset** + **VFX Component** (mirrors the Material + RenderMeshVisual split); classic **GPU Particles** = a Mesh Visual with a **Particles Emitter Material**. **Post Effects** are full-screen **Graph Post Effect Materials**.
 
 ## How to build it

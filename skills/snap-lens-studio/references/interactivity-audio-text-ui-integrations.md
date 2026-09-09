@@ -122,6 +122,20 @@ vs the untouched 147/137/135). Show the feed through the component's placeholder
 material) and mask or composite around that image; do not sample the asset in a code node, at least in
 preview. Device behaviour was not tested.
 
+**The placeholder path, measured (LS 5.23.2, Sep 2026).** A full-screen `Image` whose material
+`baseTex` is the Reverse Camera Texture, parented under a `MaskingComponent` square whose
+`cornerRadius` is half its size (a circle), drew **empty** in the editor - bound at start, bound again
+after `isSupported` resolved, and re-bound a few frames later. The provider swap never reached the
+material binding. The package's bundled **Mock** texture bound directly to the same material drew at
+once. Recipe that works: expose the Mock as a script input and bind it when
+`global.deviceInfoSystem.isEditor()` is true, the reverse texture otherwise; keep the mask object
+disabled until `isSupported` resolves true and let the post-effect draw a fallback inside the hole;
+drive the mask's `anchors` and `cornerRadius` from script (the Editor API exposes only `cornerRadius`,
+in pixels, and children are clipped to the rect). Give that camera's `renderTarget` the main Render
+Target with a `renderOrder` after the post-effect camera, not the Overlay Target, or the feed is
+missing from the captured snap. The real reverse feed is still untested in this design: only a phone
+can show it, so say so in the hand-off.
+
 ## Bitmoji / GenAI Suite / Snap3D
 
 - **Bitmoji** — the **Bitmoji 3D** component is a no-code way to download an avatar for the user, friends, or My AI; **Bitmoji Head** is for face Lenses. Animate via clips, Mixamo, or the **Bitmoji Animation** plugin (which uses AnimationPlayer — the same driver behind the mixer→player migration). The **Bitmoji Suite plugin** adds outfits, **Props**, and animation ([bitmoji 3d](https://developers.snap.com/lens-studio/features/bitmoji-avatar/bitmoji-3d), [bitmoji suite](https://developers.snap.com/lens-studio/features/bitmoji-suite/overview)).
@@ -159,11 +173,23 @@ Controls that help the user (pickers, sliders) usually should **not** bake into 
 - Vertical drags are relatively safe to claim (the lens carousel is horizontal), making "swipe up/down anywhere" a good gesture for a 1-D parameter — often better UX than an on-screen slider, at zero screen cost.
 - ⚠️ **A bare `TapEvent` under `touchBlocking = true` can receive nothing** — verified by injecting taps that produced no state change at all. If you claim touches, bind `TouchStartEvent` as well behind an idempotent handler so one physical tap toggles once. Better still, **do not claim touches on a tap-only Lens**: a tap has no direction, so there is nothing for the carousel to steal, and claiming costs the user their carousel navigation for no benefit.
 
+### First-run tour: the carousel clip has to show the mechanic
+A tap-cycled lens whose first frame is its default state looks inert in the auto-generated preview
+clip (about 3 s), and a reviewer will send it back for that. Pattern that shipped (Sep 2026): when
+the persistent `"<lens>_saved"` flag is absent, auto-advance the state on a timer (presets every
+0.9 s; a window opening 0.3 s in and moving at 1.7 s and 3.0 s) with the native `lens_hint_tap`
+hint showing, and end the tour on the first tap. Never write the saved flag during the tour: only
+the user's own tap counts as a choice.
+
 ### Persist settings so a retake doesn't reset the lens
 By default every retake re-runs the lens: parameters snap back to defaults and first-run hints re-appear. Fix with **persistent storage**, which survives retakes and sessions on that device.
 - `global.persistentStorageSystem.store` is a `GeneralDataStore`: `putFloat/getFloat`, `putBool/getBool`, `putString/getString`, vec2/3/4, arrays.
 - ⚠️ **There is no `has(key)`.** Getters return a zero-value when absent (`getFloat` → 0, `getBool` → false), so write an explicit `"<lens>_saved"` boolean flag and branch on it — that flag doubles as the "first-ever run" test for whether to show the hint at all.
 - Save on `TouchEndEvent` rather than every frame of a drag.
+- **Remember the last state the user chose, not only settings.** A recurring review ask: after a
+  snap is taken and scrapped, the lens must come back where it was. Save the chosen preset index, or
+  open/closed plus position, on every tap; on start restore it and skip the tour and the hint.
+  Verified in the editor: a lens reset restored a preset index and `open at (0.75, 0.25)`.
 
 ### Input you do NOT get
 - **No raw accelerometer.** No acceleration API for shake detection; the accessible motion signal is a `DeviceTracking` component in **Rotation** mode whose rotation you diff per frame. Untestable in Lens Studio (no gyro in the editor) — it only proves out on device.

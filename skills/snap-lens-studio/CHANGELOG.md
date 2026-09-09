@@ -1,6 +1,6 @@
 # Changelog — snap-lens-studio skill
 
-**Stamp:** `2026-09-09.1`
+**Stamp:** `2026-09-09.2`
 
 This file is the sync key for every agent that loads the skill (Grok, Claude, and
 anything cloning from GitHub). Read it **before** editing the skill. If two
@@ -41,6 +41,21 @@ carry this stamp. Current live pin is LS **5.23.2** (17 Aug 2026, re-verified
 2026-09-07 — no 5.24 exists); Spectacles (2024) remains **5.15.4**.
 
 ## Entries
+
+### 2026-09-09.2 — second-camera placeholder path, first-run tour + last-state memory, capture routing
+
+- **Home:** `references/interactivity-audio-text-ui-integrations.md` — Dual Camera placeholder path
+  measured: an Image material bound to the Reverse Camera Texture draws **empty** in the editor (the
+  provider swap never reaches the binding); bind the package's Mock under `isEditor()`. First-run
+  tour pattern (auto-advance until the first tap, hint showing, never save during the tour) and
+  "remember the last state, not only settings" (restore verified after a lens reset).
+- **Home:** `references/materials-rendering-vfx.md` — `MaskingComponent` circle: pixel-square rect,
+  `cornerRadius` = half its size (the only property the Editor API exposes); animate a hole from script.
+- **Home:** `references/fundamentals-and-workflow.md` — content under a UI camera that must be in
+  the snap: `renderTarget` = main Render Target, `renderOrder` after the post-effect camera.
+- `SKILL.md`: two router lines (second-camera feed; the two review asks for tap-cycled/timed lenses,
+  plus: a timed effect must end on a look worth keeping).
+- Still untested: the real reverse feed on a phone in the masked-placeholder design.
 
 ### 2026-09-09.1 — six-lens batch: three silent code-node deaths, verification harness, Dual Camera
 
