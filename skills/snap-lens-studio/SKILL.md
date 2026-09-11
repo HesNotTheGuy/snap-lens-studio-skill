@@ -216,6 +216,10 @@ source before trusting it.
   must also end on a look worth keeping: a transition whose settled frame was the plain image was
   cut on review. `references/interactivity-audio-text-ui-integrations.md` § First-run tour,
   § Persist settings.
+- **Opening a project in a newer Lens Studio migrates it silently** (5.23.2 → 5.24.0 measured):
+  `//@component` prepended to JS scripts, packages re-stamped, `iconHash` kept, `BackUp/<old build>.zip`
+  written; lenses published from 5.24 need Snapchat 14.21+. Zip the project first. Details under
+  "Current version" in `references/fundamentals-and-workflow.md`.
 - **Spectacles push breaks after a Lens Studio update** → you left the 5.15.x pin.
 - **MCP client shows `401`, `Tool not found`, or no lens-studio tools at all** →
   three different failures with different fixes (rotated token / unclicked plugin

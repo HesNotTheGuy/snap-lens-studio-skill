@@ -1,6 +1,6 @@
 # Changelog — snap-lens-studio skill
 
-**Stamp:** `2026-09-11.1`
+**Stamp:** `2026-09-11.2`
 
 This file is the sync key for every agent that loads the skill (Grok, Claude, and
 anything cloning from GitHub). Read it **before** editing the skill. If two
@@ -36,11 +36,21 @@ home directories **in the same turn**, then commit, tag with the stamp, and push
 
 ## Known drift (do not ignore)
 
-None as of `2026-09-11.1`. All three copies (Grok home, Claude home, GitHub `main`)
+None as of `2026-09-11.2`. All three copies (Grok home, Claude home, GitHub `main`)
 carry this stamp. Current live pin is LS **5.24.0** (10 Sep 2026, verified on ar.snap.com
 2026-09-11); Spectacles (2024) remains **5.15.4**.
 
 ## Entries
+
+### 2026-09-11.2 — what a 5.24 project migration does, MCP after the update
+
+- **Home:** `references/fundamentals-and-workflow.md` — measured 5.23.2 → 5.24.0 migration over MCP:
+  no dialog; `.esproj` rewritten with `iconHash` preserved; `//@component` prepended to a legacy JS
+  script; packages re-stamped (`clientVersion` 14.21); scene, shader and icon files untouched; LS
+  writes `BackUp/<old build>.zip`; lens behaviour identical; **Minimum Client Version 14.21.0** for
+  lenses published from 5.24. MCP link survived the update; `ExecuteEditorCode` compiles as
+  TypeScript (TS2339 on untyped object literals); screenshot size follows the panel.
+- `SKILL.md`: one router line (silent migration + client floor).
 
 ### 2026-09-11.1 — Lens Studio 5.24.0 pin + release-note gotchas
 
