@@ -2,7 +2,7 @@
 
 This reference covers the layer of a Lens that turns a static effect into something a user can touch, hear, share, and connect to the outside world: screen-space UI, text (2D and 3D), audio and audio-reactive effects, animation and tweening, multiplayer via Connected Lenses, and the network paths (approved Remote APIs, InternetModule, Remote Service Gateway) plus the three delivery targets that change what's allowed (Snapchat, Camera Kit, Spectacles). The through-line worth internalizing: **the same Lens behaves differently depending on where it runs.** Open-internet `fetch` works on Spectacles and Camera Kit but not in a published Snapchat Lens; a long list of APIs silently no-op inside Connected Lenses; and Spectacles and Camera Kit are each pinned to specific Lens Studio versions. Design for the target, not just the feature.
 
-Version baseline: latest Lens Studio is **5.23.2** (Aug 17, 2026), preceded by 5.23.0 (Jul 28, 2026) ([download](https://ar.snap.com/download)).
+Version baseline: latest Lens Studio is **5.24.0** (Sep 10, 2026), preceded by 5.23.2 (Aug 17, 2026) ([download](https://ar.snap.com/download)).
 
 ## Table of contents
 - [UI: screen space, Screen Transform, widgets](#ui-screen-space-screen-transform-widgets)
@@ -60,6 +60,8 @@ Lens Studio supports four animation types: **Transform**, **Skeletal** (keep it 
 **Tweening** is for lightweight, code-driven property animation without authoring clips. Lens Studio bundles **Tween.js** with a wrapper: add **`+` → Scripts → Tween Manager** (`TweenManager`) once, then attach per-object **TweenType** scripts (move/scale/rotate/color) ([tween manager](https://developers.snap.com/lens-studio/lens-studio-workflow/adding-interactivity/tween-manager), [tween example](https://developers.snap.com/lens-studio/examples/lens-examples/tween)).
 
 ## Connected Lenses (multiplayer / shared AR)
+
+**LS 5.24 adds the Connected Framework** ([overview](https://developers.snap.com/games/connected-framework/overview)): a multiplayer-matchmaking SDK built on Connected Lenses, Snapchat only. One scene component, **Multiplayer Manager** (needs a `ConnectedLensModule` asset), moves the lens through singleplayer → matchmaking → multiplayer; **Session Controller** (users, host, server time, realtime stores), **Sync Entity** (one script bound to one networked store, with ownership), **Storage Property** (one synced value), **Instantiator / Network Spawner** (networked prefabs with stable shared IDs), drop-in Sync Transform / Sync Materials / Sync Realtime Store components, and Asset Library UI (Game Manager state machine, Event Feed, Presence Indicator, Sync Tween). Matchmaking in the Lens Studio Preview connects to the real service, so several Preview windows and pushed devices can join one live session. Shortest path: the Multiplayer Game Starter Project.
 
 Connected Lenses let multiple users share one AR experience. Modes are **Remote** and **Colocated**, supporting both synchronous and asynchronous play, with a hard **limit of 64 participants per session** ([Connected Lenses overview](https://developers.snap.com/lens-studio/features/connected-lenses/connected-lenses-overview)). State is kept in sync by the **Sync Framework**, a set of scripting helpers layered over a RealtimeStore ([sync framework](https://developers.snap.com/lens-studio/features/connected-lenses/connected-lenses-templates/sync-framework)):
 
@@ -203,6 +205,7 @@ By default every retake re-runs the lens: parameters snap back to defaults and f
 - **LS 5.9** — `fetch` / `performHttpRequest` / `createWebSocket` / `createWebView` moved RemoteServiceModule → **InternetModule** (Spectacles + Camera Kit only). InternetModule class = Lens Scripting **v305**; RSM deprecations annotated **v308**; `createWebViewOptions` **v313**.
 - **LS 5.10.1 / Spectacles OS 5.062** — Remote Service Gateway floor.
 - **LS 5.15.x** (through 5.15.4) — Spectacles 2024 pinned line.
+- **LS 5.24.0** (Sep 10, 2026) — Connected Framework + multiplayer templates, Game Manager, Game Suite 2.0, Physics 2D starter/package, AI Video Transform + AI Photo Duo GenAI plugins, SPECS Account sign-in, Custom Text2D materials; 2D Text default blend → Normal (auto-migrated from PremultipliedAlpha on project update); Editor API `fetch(request, onSuccess, onFailure)` removed → `fetchAsync(request)`; Leaderboard lenses published from 5.24 need Snapchat 14.23; 5.25 = last Intel-Mac build.
 - **Camera Kit** — pin LS to the published matrix (top row 5.18.x ↔ Mobile 1.46.x / Web 1.14.x as of 2026-09-07; no rows for 5.19–5.23); re-fetch at build time.
 
 ## Go deeper

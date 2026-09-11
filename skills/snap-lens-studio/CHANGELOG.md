@@ -1,6 +1,6 @@
 # Changelog — snap-lens-studio skill
 
-**Stamp:** `2026-09-09.2`
+**Stamp:** `2026-09-11.1`
 
 This file is the sync key for every agent that loads the skill (Grok, Claude, and
 anything cloning from GitHub). Read it **before** editing the skill. If two
@@ -36,11 +36,31 @@ home directories **in the same turn**, then commit, tag with the stamp, and push
 
 ## Known drift (do not ignore)
 
-None as of `2026-09-09.1`. All three copies (Grok home, Claude home, GitHub `main`)
-carry this stamp. Current live pin is LS **5.23.2** (17 Aug 2026, re-verified
-2026-09-07 — no 5.24 exists); Spectacles (2024) remains **5.15.4**.
+None as of `2026-09-11.1`. All three copies (Grok home, Claude home, GitHub `main`)
+carry this stamp. Current live pin is LS **5.24.0** (10 Sep 2026, verified on ar.snap.com
+2026-09-11); Spectacles (2024) remains **5.15.4**.
 
 ## Entries
+
+### 2026-09-11.1 — Lens Studio 5.24.0 pin + release-note gotchas
+
+- Pin: mainline **5.24.0** (released 10 Sep 2026; verified on ar.snap.com/download and
+  ar.snap.com/lens-studio-v5 on 2026-09-11; the Custom Text2D and Connected Framework doc pages
+  exist). Spectacles (2024) stays **5.15.4**; the 5.24.0 page's Spectacles line reads "The current
+  latest Spectacles Firmware does not support this Lens Studio version". Intel Macs: 5.25 is the
+  last Intel build, 5.26+ needs Apple silicon. Every per-file version line updated (SKILL.md table
+  + seven references).
+- **Home:** `references/fundamentals-and-workflow.md` — 5.24 headline list; the **2D Text blend
+  default PremultipliedAlpha → Normal** migration (automatic on project update; other text blend
+  modes may shift, so re-check lenses with text); Editor API callback `fetch` removed on
+  AssetListService/MusicListService → `fetchAsync`; Leaderboard lenses from 5.24 need Snapchat 14.23.
+- **Home:** `references/materials-rendering-vfx.md` — Custom Text2D materials (Text Data node) and
+  the blend-default note.
+- **Home:** `references/interactivity-audio-text-ui-integrations.md` — Connected Framework pointer
+  (5.24 multiplayer matchmaking SDK on Connected Lenses); version cheat-sheet row.
+- `references/snapml-and-generative-ai.md` — AI Video Transform + AI Photo Duo GenAI plugins.
+- Not yet exercised: nothing in 5.24 was run here; the MCP / Editor API notes still describe 5.23.2
+  behaviour until re-measured.
 
 ### 2026-09-09.2 — second-camera placeholder path, first-run tour + last-state memory, capture routing
 

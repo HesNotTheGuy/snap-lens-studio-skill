@@ -2,7 +2,7 @@
 
 Lens Studio ships two distinct machine-learning capability families, and keeping them mentally separate is the single most important thing when working in this area. **SnapML** is *bring-your-own-model* custom ML: you train a model somewhere else (PyTorch, TensorFlow, Roboflow), import it as `.onnx` or `.tflite`, and run it on-device through an **ML Component**. It arrived in **Lens Studio 3.0**. The **GenAI Suite** is a set of Snap-hosted, cloud-backed *authoring* tools inside Lens Studio that turn text/image prompts into ready-to-ship assets or ML effects; it graduated from Beta with **Lens Studio 5.0**, and under the hood its generators are themselves "Powered by proprietary SnapML technology." The mental model to hold: SnapML is the *runtime* for classic hand-built models; GenAI is a *content pipeline* that frequently *emits* SnapML models and assets which then run through that same runtime. Sources: [SnapML Overview](https://developers.snap.com/lens-studio/features/snap-ml/ml-overview), [GenAI Suite blog](https://ar.snap.com/blog/genai-suite-lens-studio-5.0).
 
-> **Platform / version context.** Mainline current is **Lens Studio 5.23.2** (Aug 17, 2026; 5.23.0 on Jul 28, 2026). **Spectacles (2024) development is pinned to Lens Studio 5.15.x**, not mainline — do not assume mainline features exist there. Prefer unversioned `developers.snap.com/lens-studio/...` doc URLs over `/x.y.z/...` paths. Sources: [Release Notes](https://ar.snap.com/lens-studio-v5), [ar.snap.com/download](https://ar.snap.com/download).
+> **Platform / version context.** Mainline current is **Lens Studio 5.24.0** (Sep 10, 2026; 5.23.2 on Aug 17, 2026). 5.24 adds two GenAI plugins: **AI Video Transform** (community Video2Video lenses that transform user-recorded video with a text prompt or effect) and **AI Photo Duo** (images featuring two selected identities, prompt templates, optional pose references). **Spectacles (2024) development is pinned to Lens Studio 5.15.x**, not mainline — do not assume mainline features exist there. Prefer unversioned `developers.snap.com/lens-studio/...` doc URLs over `/x.y.z/...` paths. Sources: [Release Notes](https://ar.snap.com/lens-studio-v5), [ar.snap.com/download](https://ar.snap.com/download).
 
 ---
 
@@ -129,7 +129,7 @@ AI Assistant, ML Face Effects, Immersive ML, Head Morph / Head Generator, Face M
 - **Quantization** (post-training pipeline + TFLite importer support + Multi-Class Classification template): **5.x, exact minor not stated** (open flag). No "~50% smaller" figure exists in the docs.
 - **GenAI Suite** (Easy Lens, Face/Texture/3D generators, AI-Enabled Components, Creator Mode) and **native TypeScript**: Lens Studio **5.0**.
 - **Spectacles 2024 SnapML:** pinned to Lens Studio **5.15.x**; NMS re-implemented in JS; models < 10 MB; detect 3–5 (up to ~10) objects.
-- **Mainline current:** Lens Studio **5.23.2** (Aug 17, 2026).
+- **Mainline current:** Lens Studio **5.24.0** (Sep 10, 2026).
 
 ## Go deeper
 

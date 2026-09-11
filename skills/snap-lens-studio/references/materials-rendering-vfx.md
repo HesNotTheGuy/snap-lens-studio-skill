@@ -25,7 +25,7 @@ Everything a Lens draws to the screen passes through this layer: **materials** d
 
 **Common material properties** — Base Color + Base Texture, separate Opacity Texture, Metallic (0–1), Roughness (0–1), Material Params texture (packs metallic/smoothness/AO), Normal map, Emissive + intensity, Detail maps/masks, Rim highlight (Fresnel), Simple Reflection / Camera Reflections, Specular AO, Baked Shadow, Fizzle (noise dissolve), Tone Mapping (HDR). **Rendering controls:** Two-sided, Depth Test, Depth Write, Depth Function, Cull Mode, Polygon Offset, Color Mask, Frustum Culling.
 
-**Blend modes (12, verbatim):** Disabled, Normal, Multiply, Add, Premultiplied Alpha, Glass, Colored Glass, Alpha Test, Alpha To Coverage, Screen, Min, Max. An Opacity Texture requires **Normal**; **Alpha Test** (cutout) is cheaper (no sorting).
+**Blend modes (12, verbatim):** Disabled, Normal, Multiply, Add, Premultiplied Alpha, Glass, Colored Glass, Alpha Test, Alpha To Coverage, Screen, Min, Max. An Opacity Texture requires **Normal**; **Alpha Test** (cutout) is cheaper (no sorting). **LS 5.24:** the default blend mode for **2D Text** is now **Normal** (was Premultiplied Alpha; the engine no longer premultiplies text alpha unconditionally; a project update migrates PremultipliedAlpha text automatically, other text blend modes may shift), and **Custom Text2D materials** exist: Asset Browser → + → Materials → Text2D gives a graph with a **Text Data** node (pass id: main/emoji/shadow/outline/background/decoration; quad colour; coverage-alpha-masked colour; SDF distance; UV) that you assign to a Text component's Material field ([docs](https://developers.snap.com/lens-studio/features/text/custom-text-materials)).
 
 **Render pipeline** — `Camera` (every Lens needs at least one; see the [Camera scripting class](https://developers.snap.com/lens-studio/api/lens-scripting/classes/Built-In.Camera.html)), **Layers** (gate what a Camera renders), **Render Target** (output surface, chainable for multi-pass), scene-config **Live Target** / **Capture Target**, Render Order + Mask Texture, plus Depth Render Target and Device Depth. Source: [Camera](https://developers.snap.com/lens-studio/lens-studio-workflow/scene-set-up/camera).
 
@@ -123,7 +123,7 @@ A custom code node that fails to compile shows **no magenta, no console error an
 - [Light and Shadow](https://developers.snap.com/lens-studio/features/graphics/light-and-shadow) — light types, Shadow Mapping vs Projective Shadows, and limits.
 - [Ray Tracing guide](https://developers.snap.com/lens-studio/features/graphics/raytracing/raytracing-guide) — reflections/GI setup and device support.
 - [Performance Optimization Guide](https://developers.snap.com/lens-studio/publishing/optimization/performance-optimization-guide) and [Texture Optimization](https://developers.snap.com/lens-studio/publishing/optimization/texture-optimization) — the budgets every rendering choice must fit inside.
-- [ar.snap.com/lens-studio-v5](https://ar.snap.com/lens-studio-v5) — versioned release notes; LS 5.22 brought YAML graph files, Pause When Not Visible, Particle Orient Node.
+- [ar.snap.com/lens-studio-v5](https://ar.snap.com/lens-studio-v5) — versioned release notes; LS 5.22 brought YAML graph files, Pause When Not Visible, Particle Orient Node; 5.24 brought Custom Text2D materials and the 2D Text blend-default change.
 ## Estimating a subject's position from a segmentation mask
 
 A shader with no face-position uniform can derive one by sampling the

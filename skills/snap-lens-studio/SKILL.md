@@ -46,7 +46,7 @@ model, and which features silently do nothing. Decide this first:
 
 | Target | Lens Studio version | Notes |
 | --- | --- | --- |
-| **Snapchat** (Face / World Lens) | current mainline — **5.23.x** (5.23.2, Aug 17 2026) | file-size/RAM/FPS budgets; `RemoteServiceModule` for approved APIs |
+| **Snapchat** (Face / World Lens) | current mainline — **5.24.0** (Sep 10 2026) | file-size/RAM/FPS budgets; `RemoteServiceModule` for approved APIs |
 | **Spectacles (2024)** | **pinned to 5.15.x** (5.15.4) — *not* mainline | thermal/power budget plus a [≤ 25 MB published-Lens cap](https://developers.snap.com/spectacles/get-started/start-building/publishing-lens); SIK/Sync Kit; `InternetModule` (open `fetch`) |
 | **Camera Kit** (your own iOS/Android/Web app) | pinned per a **drifting LS↔SDK matrix** — re-check at build | some Lens features are unavailable: Remote Service–enabled Lenses, Licensed Sounds, Scan, VoiceML/TTS, Multi-User, Spatial Persistence. **Ray Tracing: unsupported on Android, supported on iOS.** **Bitmoji IS available**, marked "limited compatibility" — see `interactivity-audio-text-ui-integrations.md` |
 
@@ -223,7 +223,7 @@ source before trusting it.
   `references/fundamentals-and-workflow.md` § MCP / Editor API.
 
 - ⛔ **MCP/Editor API — `setEmptyProject()` + `openProject()` hard-crashes LS
-  (5.23.1, verified Aug 2026; still treat as live on 5.23.2).** Do **not** use
+  (5.23.1, verified Aug 2026; still treat as live on 5.23.2 and 5.24).** Do **not** use
   `setEmptyProject()` as a "force reimport" after disk edits, and do **not**
   chain empty→open in one `ExecuteEditorCode` body. Race: transaction still
   holds `AssetImportMetadata` after storage is torn down →

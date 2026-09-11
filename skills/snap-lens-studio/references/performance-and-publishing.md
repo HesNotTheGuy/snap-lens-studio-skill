@@ -2,7 +2,7 @@
 
 Snapchat Lenses run inside a phone camera in real time, so they live under strict, non-negotiable resource budgets. A Lens that exceeds file-size, memory, or frame-rate limits will either be rejected at submission, silently degraded, or crash on lower-end devices. This file covers the exact numeric budgets you must design to, the profiling tools that measure them, the optimization techniques that get you under budget, the publishing/review pipeline, and the content policies that decide whether your Lens goes Live. Every budget here is a *design constraint you plan for from the start*, not something you retrofit at the end — the cheapest optimization is the asset you never imported. **Spectacles Lenses use a completely different performance model** (thermal/power-centric, with a looser [≤ 25 MB published-Lens cap](https://developers.snap.com/spectacles/get-started/start-building/publishing-lens) instead of 8 MB) and are called out separately; never copy mobile budgets onto Spectacles.
 
-Version context: current Lens Studio line is **5.23.2** (Aug 17, 2026). Spectacles (2024) authoring stays pinned to the **5.15.x** series (5.15.4) — verified 2026-08-10, and note the Spectacles *docs* say "Download latest Lens Studio" without naming a version, which does not lift the pin.
+Version context: current Lens Studio line is **5.24.0** (Sep 10, 2026). Spectacles (2024) authoring stays pinned to the **5.15.x** series (5.15.4) — verified 2026-08-10, and note the Spectacles *docs* say "Download latest Lens Studio" without naming a version, which does not lift the pin.
 
 ## What is possible
 
