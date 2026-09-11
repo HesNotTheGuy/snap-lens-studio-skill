@@ -127,6 +127,24 @@ Key Camera properties: **Layers** (a camera renders only objects whose `layer` i
   compiles as TypeScript:** `let info = {}; info.x = 1;` fails with TS2339 and nothing runs; declare `const out: any = {}`
   and cast (`(model.project as any).metaInfo`). Screenshot pixel size follows the preview panel (162x903 with chrome
   after the update, 324x1806 before), so compare captures by content, never by dimensions.
+- **5.24 crashed to the desktop, with no log line, twice in one session (2026-09-11), each time seconds
+  after a batch build rewrote the OPEN project's `codeNode.graphShader` on disk and the project was then
+  switched with `openProject`.** Opens without a preceding disk write never crashed. Park Lens Studio on a
+  project outside the batch before any on-disk rebuild, and make the build refuse while
+  `<name>.esproj.*.lock` exists and Lens Studio is running (the lock file marks the open project). After
+  `openProject`, wait for the icon-compression line or the lens's start print in the log before the first
+  preview call: the first crash's last log line was the preview panel being created. A background
+  `until grep -q ... ; do sleep 1; done` on the newest log is the clean wait.
+- **In 5.24 `includeChrome:false` returned a real 720x1280 frame on every project tried** (pixel std ~58),
+  so prefer it for captures and keep the chrome-plus-crop route only as the fallback for a flat stub.
+- The editor's persistent store did not survive an app crash: the next run printed `restored false` and
+  replayed the first-run tour. Prove persistence inside one session; expect the tour again after a crash.
+- A tap injected within ~2.7 s of a lens reset lands after the first-run tour has already stepped a preset,
+  so the capture is one preset off the tap count. Cancel the tour with a tap first, or label captures from
+  the print lines.
+- After a crash, relaunch with `Start-Process 'C:\Program Files\Snap Inc\Lens Studio\Lens Studio.exe'`;
+  the server answers within seconds but every tool is `Tool not found` until the plugin registry finishes
+  (~40 s, `Services started` in the log). The bearer token survives the relaunch.
 - **`PreviewPanelTool action:screenshot` with `includeChrome: false` can write a flat white stub** - on one
   project every chromeless capture was a 5848-byte 720x1280 PNG with extrema 255, while `includeChrome: true`
   wrote the real panel (324x1806 here, phone screen at rows ~600-1180). Measure the crop mean of every capture

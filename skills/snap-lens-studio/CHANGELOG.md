@@ -1,6 +1,6 @@
 # Changelog — snap-lens-studio skill
 
-**Stamp:** `2026-09-11.2`
+**Stamp:** `2026-09-11.3`
 
 This file is the sync key for every agent that loads the skill (Grok, Claude, and
 anything cloning from GitHub). Read it **before** editing the skill. If two
@@ -36,11 +36,21 @@ home directories **in the same turn**, then commit, tag with the stamp, and push
 
 ## Known drift (do not ignore)
 
-None as of `2026-09-11.2`. All three copies (Grok home, Claude home, GitHub `main`)
+None as of `2026-09-11.3`. All three copies (Grok home, Claude home, GitHub `main`)
 carry this stamp. Current live pin is LS **5.24.0** (10 Sep 2026, verified on ar.snap.com
 2026-09-11); Spectacles (2024) remains **5.15.4**.
 
 ## Entries
+
+### 2026-09-11.3 — 5.24 crash rule: never rewrite an open project on disk
+
+- **Home:** `references/fundamentals-and-workflow.md` — two same-session crashes traced to rewriting the
+  open project's graph shader on disk and then switching projects; park first, lock-file guard in the
+  build, wait for the icon-compression/start print after `openProject` before touching the preview.
+  `includeChrome:false` gives real 720x1280 frames in 5.24. The editor persistent store does not survive
+  a crash. Injected taps within ~2.7 s of a reset land after the first-run tour stepped. Relaunch +
+  ~40 s `Tool not found` window.
+- `SKILL.md`: one router line.
 
 ### 2026-09-11.2 — what a 5.24 project migration does, MCP after the update
 

@@ -220,6 +220,10 @@ source before trusting it.
   `//@component` prepended to JS scripts, packages re-stamped, `iconHash` kept, `BackUp/<old build>.zip`
   written; lenses published from 5.24 need Snapchat 14.21+. Zip the project first. Details under
   "Current version" in `references/fundamentals-and-workflow.md`.
+- **5.24 crashes if a build rewrites the OPEN project's graph shader on disk and you then switch
+  projects** (twice, 2026-09-11). Park on a project outside the batch before any disk rebuild, and
+  wait for the icon-compression/start print after `openProject` before the first preview call.
+  `references/fundamentals-and-workflow.md` § Verifying a lens over MCP.
 - **Spectacles push breaks after a Lens Studio update** → you left the 5.15.x pin.
 - **MCP client shows `401`, `Tool not found`, or no lens-studio tools at all** →
   three different failures with different fixes (rotated token / unclicked plugin
