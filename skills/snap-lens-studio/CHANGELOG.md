@@ -1,6 +1,6 @@
 # Changelog — snap-lens-studio skill
 
-**Stamp:** `2026-09-11.3`
+**Stamp:** `2026-09-11.4`
 
 This file is the sync key for every agent that loads the skill (Grok, Claude, and
 anything cloning from GitHub). Read it **before** editing the skill. If two
@@ -36,11 +36,21 @@ home directories **in the same turn**, then commit, tag with the stamp, and push
 
 ## Known drift (do not ignore)
 
-None as of `2026-09-11.3`. All three copies (Grok home, Claude home, GitHub `main`)
+None as of `2026-09-11.4`. All three copies (Grok home, Claude home, GitHub `main`)
 carry this stamp. Current live pin is LS **5.24.0** (10 Sep 2026, verified on ar.snap.com
 2026-09-11); Spectacles (2024) remains **5.15.4**.
 
 ## Entries
+
+### 2026-09-11.4 — editor quirks from a five-lens review loop
+
+- **Home:** `references/fundamentals-and-workflow.md` — `PreviewPanelTool` screenshot does not create
+  the output directory (reports saved, writes nothing); scene-graphql `setProperty` on a script input
+  resets the lens; the persistent store loads late (first run after an open prints `restored false`,
+  the next reset `restored true`); Publish does not save the project; the editor lens clock ran ~1 h
+  behind the system clock; how to move a project folder safely; clean-quit log signature and MCP
+  auto-reconnect after a relaunch.
+- `SKILL.md`: one router line.
 
 ### 2026-09-11.3 — 5.24 crash rule: never rewrite an open project on disk
 

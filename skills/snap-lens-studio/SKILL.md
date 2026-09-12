@@ -224,6 +224,9 @@ source before trusting it.
   projects** (twice, 2026-09-11). Park on a project outside the batch before any disk rebuild, and
   wait for the icon-compression/start print after `openProject` before the first preview call.
   `references/fundamentals-and-workflow.md` § Verifying a lens over MCP.
+- **Screenshot reported saved but no file; `setProperty` reset the lens; `restored false` on the
+  first run after an open; the editor clock an hour off; Publish did not save** → editor quirks
+  measured 2026-09-11, `references/fundamentals-and-workflow.md` § Verifying a lens over MCP.
 - **Spectacles push breaks after a Lens Studio update** → you left the 5.15.x pin.
 - **MCP client shows `401`, `Tool not found`, or no lens-studio tools at all** →
   three different failures with different fixes (rotated token / unclicked plugin

@@ -138,13 +138,37 @@ Key Camera properties: **Layers** (a camera renders only objects whose `layer` i
 - **In 5.24 `includeChrome:false` returned a real 720x1280 frame on every project tried** (pixel std ~58),
   so prefer it for captures and keep the chrome-plus-crop route only as the fallback for a flat stub.
 - The editor's persistent store did not survive an app crash: the next run printed `restored false` and
-  replayed the first-run tour. Prove persistence inside one session; expect the tour again after a crash.
+  replayed the first-run tour. Measured later the same day: after a plain `openProject` the first run also
+  printed `restored false` and re-toured while the store still held the saved mode, and the very next reset
+  printed `restored true`. The store loads late in the editor, so prove persistence with one extra reset
+  after any open or relaunch; the crash case is probably the same effect.
 - A tap injected within ~2.7 s of a lens reset lands after the first-run tour has already stepped a preset,
   so the capture is one preset off the tap count. Cancel the tour with a tap first, or label captures from
   the print lines.
 - After a crash, relaunch with `Start-Process 'C:\Program Files\Snap Inc\Lens Studio\Lens Studio.exe'`;
   the server answers within seconds but every tool is `Tool not found` until the plugin registry finishes
   (~40 s, `Services started` in the log). The bearer token survives the relaunch.
+- **`PreviewPanelTool action:screenshot` with `outputPath` does not create the directory.** It reports
+  "Screenshot saved to ..." and writes nothing when the folder is missing (a whole capture pass was lost
+  this way, 2026-09-11). `mkdir` first and check the file exists before reading it.
+- **scene-graphql `setProperty` on a script-component input resets the lens** (`Node Change` then
+  `Lens has been reset`, then the start print again). The restore path runs each time, so read the new
+  start print before capturing and expect the first-run tour when nothing is saved. The reset is itself
+  a persistence check. Put debug inputs back to their defaults before the human publishes.
+- **Publish does not save the project:** `.esproj` mtime and `iconHash` were unchanged after five
+  Publishes on 5.24 (2026-09-11), so the icon-hash rule only bites on an explicit Save.
+- **The editor lens's `new Date()` ran about one hour behind the system clock** (20.53h printed at
+  21:32 local). Do not trust the editor for clock-driven looks: drive them through a debug input and
+  confirm the hour-to-look mapping on a phone.
+- **Moving a project folder after Publish** (from a working folder to a submitted one): switch Lens Studio to another
+  project first (it deletes the `.esproj.*.lock` on switch), then rename with `os.rename` on the same
+  volume. `shutil.move` falls back to copy + delete when the rename is blocked and left an empty source
+  folder behind; a shell whose cwd is inside the folder is enough to block it, so never `cd` into a
+  project directory.
+- A clean quit ends the log with `Application destroyed` / `Policy destroyed`; a `CrashLog-*.txt` is
+  written beside every session's log, so its existence is not evidence of a crash. After the human
+  relaunched, the MCP client reconnected by itself (token from keychain, `Client connected` in the log)
+  with no `.mcp.json` change.
 - **`PreviewPanelTool action:screenshot` with `includeChrome: false` can write a flat white stub** - on one
   project every chromeless capture was a 5848-byte 720x1280 PNG with extrema 255, while `includeChrome: true`
   wrote the real panel (324x1806 here, phone screen at rows ~600-1180). Measure the crop mean of every capture
