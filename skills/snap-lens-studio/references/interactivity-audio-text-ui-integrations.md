@@ -13,7 +13,7 @@ Version baseline: latest Lens Studio is **5.24.0** (Sep 10, 2026), preceded by 5
 - [Networking: Remote APIs, InternetModule, Remote Service Gateway](#networking-remote-apis-internetmodule-remote-service-gateway)
 - [Delivery targets: Camera Kit and Spectacles](#delivery-targets-camera-kit-and-spectacles)
 - [Bitmoji / GenAI Suite / Snap3D](#bitmoji--genai-suite--snap3d)
-- [Hand-rolled UI, hints, persistence & capture-safety — verified the hard way](#hand-rolled-ui-hints-persistence--capture-safety--verified-the-hard-way)
+- [Hand-rolled UI, hints, persistence & capture-safety — field notes](#hand-rolled-ui-hints-persistence--capture-safety--field-notes)
 - [Version cheat-sheet](#version-cheat-sheet)
 - [Go deeper](#go-deeper)
 
@@ -144,7 +144,7 @@ can show it, so say so in the hand-off.
 - **GenAI Suite** landed with **Lens Studio 5.0**: **Snap3D / 3D Asset Generation** (text/image→3D), **Head Morph**, material/texture generation, and **3D Capture**. Runtime **Snap3D** text→3D is exposed on **Spectacles via the Remote Service Gateway** ([3D asset gen](https://developers.snap.com/lens-studio/features/genai-suite/3dag-generation), [GenAI Suite blog](https://ar.snap.com/blog/genai-suite-lens-studio-5.0)).
 - **Camera Kit caveat** — Bitmoji **is** available on Camera Kit (Android/iOS/Web), but Snap marks all three **"limited compatibility … may not perform optimally"** on the [Bitmoji overview](https://developers.snap.com/lens-studio/features/bitmoji-avatar/overview) badge. It is *not* in the Camera Kit unsupported list. Ship it if you want it, but test on device early and keep a non-Bitmoji fallback path. Verified 2026-08-10, unchanged 2026-09-07.
 
-## Hand-rolled UI, hints, persistence & capture-safety — verified the hard way
+## Hand-rolled UI, hints, persistence & capture-safety — field notes
 
 Everything below was confirmed by building custom lens controls (a drag color wheel, a joystick color picker, sliders, toggles) against LS 5.22.1, Jul 2026. The UI Widgets above are the paved road; this is what you hit when you hand-roll controls out of `ScreenTransform` + `Image`.
 

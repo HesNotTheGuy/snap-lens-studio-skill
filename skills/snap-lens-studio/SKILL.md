@@ -4,30 +4,28 @@ description: >-
   Guide for building Snapchat Lenses (AR) in Snap's Lens Studio — the desktop
   tool for face/world/body/hand tracking, 3D, materials & VFX, scripting
   (JavaScript/TypeScript), SnapML custom ML models, generative-AI authoring,
-  UI/audio, physics, and publishing. Use this for ANY Snapchat AR / Lens /
+  UI/audio, physics, and publishing. Use this for Snapchat AR / Lens /
   "filter" work in Lens Studio: creating or debugging a Lens, face filters,
   world effects, SnapML, performance or file-size-budget issues, publishing /
   submission / review, Spectacles Lenses, or Camera Kit integration — and
-  whenever you need to know what is possible or find the right Snap doc. Trigger
+  when you need to know what is possible or find the right Snap doc. Trigger
   on "Snapchat filter/lens", "Lens Studio", ".lsproj"/".esproj", "SnapML", "Spectacles
   Lens", "Camera Kit", face/world tracking in Snapchat, or lens publishing —
-  even when the user says "filter" loosely. Prefer this over memory: Lens Studio
-  changes fast across 5.x versions, so verify specifics against the official docs
-  this skill points to.
+  including when the user says "filter" loosely. Lens Studio changes across
+  5.x versions; verify specifics against the official docs this skill points to.
 license: MIT
 ---
 
 # Building Snapchat Lenses in Lens Studio
 
 Lens Studio is Snap's free desktop tool for authoring **Lenses** — real-time AR
-experiences with tracking, 3D, scripting, and ML. This skill is a router plus a
-method: it holds distilled, verified reference material in `references/`, and it
-teaches you how to confirm the fast-moving specifics against the official docs
-rather than guessing. Lens Studio ships a new version roughly monthly and many
-online tutorials are stale, so **the habit of verifying against a live doc or
-build is part of the skill, not an afterthought.**
+experiences with tracking, 3D, scripting, and ML. This skill is a router plus
+reference files: methodology and cross-cutting notes live here; exact APIs,
+budgets, and property names live in `references/` and load on demand. Lens Studio
+ships a new version roughly monthly and many tutorials go stale, so confirm
+version-sensitive facts against the live docs this skill points to.
 
-## First, get the words right (they are different products)
+## Terminology
 
 - **Filters** = static **2D overlays** on a Snap (frames, color, stickers,
   timestamp/temp/speed, Geofilters). No AR, no tracking, no code. Made on the web
@@ -39,7 +37,7 @@ build is part of the skill, not an afterthought.**
   but a **distinct target** with its own SDK (Spectacles Interaction Kit, Sync
   Kit) and a **version pin** (see below).
 
-## Rule #1 — pick your delivery target before anything else
+## Pick the delivery target first
 
 The target determines the Lens Studio version, which APIs exist, the performance
 model, and which features silently do nothing. Decide this first:
@@ -148,9 +146,8 @@ measured from the top of a portrait phone frame.
 
 ## Project hygiene & code quality
 
-Lens projects punish clutter more than most codebases, because the deliverable has
-a hard ~8 MB cap and a strict RAM budget — dead weight isn't just untidy, it costs
-reach and frame rate.
+Unused assets still count against a hard ~8 MB file-size cap and a strict RAM
+budget, so they affect reach and frame rate, not just project tidiness.
 
 - **Delete dead assets and files.** Unused textures, meshes, scripts, and imported
   packages bloat the project, slow loads, and confuse collaborators — and
@@ -185,7 +182,7 @@ asserting them, and prefer the doc link over a remembered number. When installin
 third-party Custom Components / Asset Library items, read the component's real
 source before trusting it.
 
-## Cross-cutting gotchas (the highest-value traps)
+## Cross-cutting gotchas
 
 - **Nothing renders** → the object's `layer` isn't in the camera's **Layers** set,
   the object/parent is disabled, or it's on the wrong **render target**.
@@ -258,7 +255,7 @@ source before trusting it.
   the hash patch **wipes** `iconHash` and restores the default grey icon. Full
   recipe: `references/fundamentals-and-workflow.md` § Lens icons.
 
-## Render-to-texture (off-screen camera) traps — verified the hard way, Jul 2026
+## Render-to-texture (off-screen camera) traps — verified Jul 2026
 
 Any pipeline where a camera renders into its own RenderTarget that another pass
 samples (paint masks, feedback loops, mirrors) hits ALL of these:
@@ -336,7 +333,7 @@ samples (paint masks, feedback loops, mirrors) hits ALL of these:
   or feedback-loop wiring MUST be re-verified after a full restart (publish loads
   from disk, so a working live preview is necessary but not sufficient).
 
-## Silent failures in custom code-node shaders — verified the hard way, Aug 2026
+## Silent failures in custom code-node shaders — verified Aug 2026
 
 A custom code node that fails to compile produces **no magenta, no console error
 and no thrown exception**. The material silently falls back and the Lens keeps
