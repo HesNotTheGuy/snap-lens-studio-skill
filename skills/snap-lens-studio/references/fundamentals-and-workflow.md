@@ -87,7 +87,7 @@ Key Camera properties: **Layers** (a camera renders only objects whose `layer` i
 - **Push to Spectacles fails after updating LS** → you left the 5.15.x pin; roll back.
 - **Stale tutorials** → many older/4.55.1 and third-party tutorials predate LS 5's SceneObject / Scene Manager / YAML-graph changes; verify against current developers.snap.com docs.
 
-## Driving Lens Studio over MCP / the Editor API — verified the hard way
+## Driving Lens Studio over MCP / the Editor API — field notes
 
 - ⚠️ **`model.openProject(new Editor.Path("…/X.esproj"))` switches projects IN-PROCESS.** No app restart: the MCP server, its auth token, and loaded plugins all survive; ~40 s to import. That is the difference between a 40-second and a 3-minute loop when working across a family of lens projects. `setDefaultProject()` / `setEmptyProject()` also exist on `Editor.Model.IModel`.
 - ⚠️ **Plugin "Trust and Load" dialogs gate MCP tool registration.** After each app launch the server answers HTTP but returns `Tool not found` until a human clicks through the per-plugin filesystem-permission prompts. The **"Trust External Plugins"** preference did *not* suppress them in 5.22, and grants aren't persisted in project prefs, global `PluginsPreferences`, or the registry. Mitigate by batching work per launch and preferring in-process `openProject` to restarting.

@@ -88,7 +88,7 @@ Enforce these from the [Performance Optimization Guide](https://developers.snap.
 - **Ray Tracing silently no-ops on unsupported devices** or when a caster mesh exceeds **65,000 triangles** — gate it on device capability and keep caster meshes low-poly.
 - **Citing a stale doc URL** — the `/4.55.1/...` paths are frozen; use unversioned `/lens-studio/...` for current behavior.
 
-## Custom code-node shaders & material wiring — verified the hard way
+## Custom code-node shaders & material wiring — field notes
 
 From building ~15 full-screen post-effect lenses on the `CodeNodeMaterialPreset` (custom GLSL node) pipeline, LS 5.22.1, Jul 2026.
 

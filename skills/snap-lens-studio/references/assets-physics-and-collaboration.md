@@ -113,7 +113,7 @@ Custom preview videos carry no tracking data, so **Rotation, Surface, and World 
 - **SPECS integration testing: confirmed (Jul 2026) — LEAF (Lens Evaluation & Automation Framework).** Write TypeScript test scenarios that simulate user actions and assert against live scene state ([v5 page](https://ar.snap.com/lens-studio-v5)); deeper feature docs are still thin, so check the current [release notes](https://ar.snap.com/lens-studio-v5) for specifics.
 - **Still open — how to reveal the Bug overlay** (Developer Mode / triple-tap / shake): docs only say "tap the Bug icon after pairing" — no gesture is documented.
 
-## Cloning and templating lens projects — verified the hard way
+## Cloning and templating lens projects — field notes
 
 An effective pattern for shipping a family of related lenses (used for ~15 post-effect lenses, LS 5.22.1):
 1. Build one project to completion, then **strip it to a template** (camera + post-effect + material + shader; delete lens-specific scripts and UI).
