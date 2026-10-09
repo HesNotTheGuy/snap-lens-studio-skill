@@ -1,6 +1,6 @@
 # Changelog — snap-lens-studio skill
 
-**Stamp:** `2026-09-11.4`
+**Stamp:** `2026-10-09.1`
 
 This file is the sync key for every agent that loads the skill (Grok, Claude, and
 anything cloning from GitHub). Read it **before** editing the skill. If two
@@ -21,7 +21,9 @@ home directories **in the same turn**, then commit, tag with the stamp, and push
 
 ## Before you edit
 
-1. Read the stamp in **both** homes and the newest tag on GitHub.
+1. Read the stamp in **both** homes and the newest tag on GitHub, then `git fetch` and
+   compare `main` with `origin/main`: a PR merged on GitHub can land with no stamp bump
+   and no tag (PR #1 did, 2026-10-07).
 2. If stamps differ, diff the two trees and merge into both before adding work.
 3. The lesson you are adding has **one home** (usually a file under `references/`).
    Do not paste it into SKILL.md *and* a reference. SKILL.md only gets a router
@@ -36,11 +38,52 @@ home directories **in the same turn**, then commit, tag with the stamp, and push
 
 ## Known drift (do not ignore)
 
-None as of `2026-09-11.4`. All three copies (Grok home, Claude home, GitHub `main`)
-carry this stamp. Current live pin is LS **5.24.0** (10 Sep 2026, verified on ar.snap.com
-2026-09-11); Spectacles (2024) remains **5.15.4**.
+None as of `2026-10-09.1`. All three copies (Grok home, Claude home, GitHub `main`)
+carry this stamp. Current live pin is LS **5.24.1** (7 Oct 2026, verified on ar.snap.com
+2026-10-09); Spectacles (2024) remains **5.15.4**.
 
 ## Entries
+
+### 2026-10-09.1 — Lens Studio 5.24.1, and PR #1 brought into the homes
+
+- **PR #1 (`0698b60`, 2026-10-07):** a copy/tone pass on README, SKILL.md and four reference
+  headings ("verified the hard way" → "field notes"); no facts changed. It was merged on GitHub
+  with no stamp bump or tag, so neither home had it; this stamp carries it into both. It gets no
+  tag of its own: a tag names the stamp inside its tree, and that tree still reads `2026-09-11.4`.
+- Pin: mainline **5.24.1** (released 7 Oct 2026; verified on ar.snap.com 2026-10-09). Spectacles
+  (2024) stays **5.15.4**; the Intel-Mac timeline is unchanged. Every per-file version line
+  updated: the SKILL.md table, eight reference headers (two still said 5.23.2 — missed by the
+  5.24.0 pass, which said all were done) and README (also still 5.23.2). The SKILL.md Camera Kit
+  row now names the matrix's 5.18.x ceiling.
+- **Home:** `references/materials-rendering-vfx.md` § Custom Text2D materials — Batching Enabled
+  is required on the Shader node (the 5.24.0 preset shipped without it, so every preset-based text
+  material was ignored; materials made in 5.24.0 need it ticked by hand); the YAML key; the full
+  eight-value pass list (the old six-name list hid decoration outline/shadow); ports; code-node
+  accessors.
+- **Home:** `references/interactivity-audio-text-ui-integrations.md` § Spectacles — SPECS 27:
+  `CursorVisualMode` renumbered (full order listed; compare by name), `createWorldAnchor` now
+  declared to return a Promise (found by a typings diff; absent from the release notes and the API
+  reference; runtime not tested), batched-shader device fixes. Version cheat-sheet row; Camera Kit
+  matrix re-checked (still no rows past 5.18.x) and reconciled with the download page, which lists
+  Camera Kit as a platform but defers to the matrix.
+- **Home:** `references/fundamentals-and-workflow.md` — the 5.24.1 paragraph (client 14.21 and the
+  MCP tool list unchanged), the typings-diff method, and a pitfall: a system-requirements warning
+  at launch means no working GPU driver.
+- `references/performance-and-publishing.md` — Batching Enabled listed as a toggle to profile, not a
+  proven lever (no doc page explains it; the 5.24.1 notes only say batched shaders got cheaper).
+- `SKILL.md`: one router line (ignored Custom Text2D material).
+- Docs re-checked 2026-10-09: the Custom Text2D page gained its Batching Enabled line; the API
+  reference, the Detailed Changelogs page (stops at 5.18), the Camera Kit matrix and the 2D Text
+  page were not updated; `developers.snap.com/lens-studio/download/release-notes` now redirects to
+  the docs home. All 160 cited URLs resolve.
+- Functional test before the push: six developer questions answered by an agent restricted to the
+  skill, then graded. It caught the two stale headers above and seven wording gaps (the 14.21
+  floor stated as fact in one place, "typings only" readable as a type-only change, no
+  CursorVisualMode names, the Camera Kit download page vs the matrix, Leaderboard status after
+  5.24.1, Batching Enabled oversold, a heading implying an update fixes existing text materials).
+  All fixed before the push. Pre-existing contradictions it also found (the RAM limit stated three
+  ways, the hand-gesture count, "SPECS 27" vs "SPECS / 2026 glasses") are left for a separate pass.
+- Not measured: opening a 5.24.0 project in 5.24.1.
 
 ### 2026-09-11.4 — editor quirks from a five-lens review loop
 

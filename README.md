@@ -76,7 +76,7 @@ Every non-trivial claim is cited inline to the official docs at `developers.snap
 were re-checked against live documentation in July 2026; corrections included Face Swap's platform
 support, the existence of `InteractionComponent.onTap`, and the Spectacles published-Lens size cap.
 
-Facts are current as of **Lens Studio 5.23.2** (August 2026; re-verified against the live docs on 2026-09-07). Lens Studio ships roughly monthly, so treat version pins as perishable and confirm numbers against the live docs.
+Facts are current as of **Lens Studio 5.24.1** (October 2026; re-verified against the live docs on 2026-10-09). Lens Studio ships roughly monthly, so treat version pins as perishable and confirm numbers against the live docs.
 
 ## Reporting corrections
 
@@ -100,7 +100,7 @@ Past corrections, so the shape is clear: the face-landmark section taught the de
 Camera Kit" was false. `scene.liveOverlayTarget` was attributed to the wrong API.
 
 Sometimes Snap's own pages disagree. The Spectacles (2024) version pin is stated on the download
-surface and repeated on every release page through 5.23.2 — while the Spectacles *setup docs* are
+surface and repeated on every release page through 5.24.1 — while the Spectacles *setup docs* are
 headed "Download latest Lens Studio" and name no version. Following those setup docs installs a
 build the 2024 hardware will not run. The skill records which surface to trust and why.
 

@@ -44,9 +44,9 @@ model, and which features silently do nothing. Decide this first:
 
 | Target | Lens Studio version | Notes |
 | --- | --- | --- |
-| **Snapchat** (Face / World Lens) | current mainline — **5.24.0** (Sep 10 2026) | file-size/RAM/FPS budgets; `RemoteServiceModule` for approved APIs |
+| **Snapchat** (Face / World Lens) | current mainline — **5.24.1** (Oct 7 2026) | file-size/RAM/FPS budgets; `RemoteServiceModule` for approved APIs |
 | **Spectacles (2024)** | **pinned to 5.15.x** (5.15.4) — *not* mainline | thermal/power budget plus a [≤ 25 MB published-Lens cap](https://developers.snap.com/spectacles/get-started/start-building/publishing-lens); SIK/Sync Kit; `InternetModule` (open `fetch`) |
-| **Camera Kit** (your own iOS/Android/Web app) | pinned per a **drifting LS↔SDK matrix** — re-check at build | some Lens features are unavailable: Remote Service–enabled Lenses, Licensed Sounds, Scan, VoiceML/TTS, Multi-User, Spatial Persistence. **Ray Tracing: unsupported on Android, supported on iOS.** **Bitmoji IS available**, marked "limited compatibility" — see `interactivity-audio-text-ui-integrations.md` |
+| **Camera Kit** (your own iOS/Android/Web app) | pinned per a **drifting LS↔SDK matrix** that stops at **LS 5.18.x** (no rows for 5.19–5.24.1, checked 2026-10-09) — re-check at build | some Lens features are unavailable: Remote Service–enabled Lenses, Licensed Sounds, Scan, VoiceML/TTS, Multi-User, Spatial Persistence. **Ray Tracing: unsupported on Android, supported on iOS.** **Bitmoji IS available**, marked "limited compatibility" — see `interactivity-audio-text-ui-integrations.md` |
 
 > Verify the current version and the Spectacles pin at
 > [ar.snap.com/download](https://ar.snap.com/download) (mainline) and
@@ -217,6 +217,10 @@ source before trusting it.
   `//@component` prepended to JS scripts, packages re-stamped, `iconHash` kept, `BackUp/<old build>.zip`
   written; lenses published from 5.24 need Snapchat 14.21+. Zip the project first. Details under
   "Current version" in `references/fundamentals-and-workflow.md`.
+- **Custom Text2D material ignored — text draws with the default text shader and the Logger says
+  the Text Data node requires Batching Enabled** → tick **Batching Enabled** on the material's
+  Shader node. The 5.24.0 preset shipped with it off; 5.24.1 fixed the preset, not materials
+  already made from it. `references/materials-rendering-vfx.md` § Custom Text2D materials.
 - **5.24 crashes if a build rewrites the OPEN project's graph shader on disk and you then switch
   projects** (twice, 2026-09-11). Park on a project outside the batch before any disk rebuild, and
   wait for the icon-compression/start print after `openProject` before the first preview call.

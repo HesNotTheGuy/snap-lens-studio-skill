@@ -2,7 +2,7 @@
 
 Snapchat Lenses run inside a phone camera in real time, so they live under strict, non-negotiable resource budgets. A Lens that exceeds file-size, memory, or frame-rate limits will either be rejected at submission, silently degraded, or crash on lower-end devices. This file covers the exact numeric budgets you must design to, the profiling tools that measure them, the optimization techniques that get you under budget, the publishing/review pipeline, and the content policies that decide whether your Lens goes Live. Every budget here is a *design constraint you plan for from the start*, not something you retrofit at the end — the cheapest optimization is the asset you never imported. **Spectacles Lenses use a completely different performance model** (thermal/power-centric, with a looser [≤ 25 MB published-Lens cap](https://developers.snap.com/spectacles/get-started/start-building/publishing-lens) instead of 8 MB) and are called out separately; never copy mobile budgets onto Spectacles.
 
-Version context: current Lens Studio line is **5.24.0** (Sep 10, 2026). Spectacles (2024) authoring stays pinned to the **5.15.x** series (5.15.4) — verified 2026-08-10, and note the Spectacles *docs* say "Download latest Lens Studio" without naming a version, which does not lift the pin.
+Version context: current Lens Studio line is **5.24.1** (Oct 7, 2026; 5.24.0 on Sep 10). Spectacles (2024) authoring stays pinned to the **5.15.x** series (5.15.4) — verified 2026-08-10, and note the Spectacles *docs* say "Download latest Lens Studio" without naming a version, which does not lift the pin.
 
 ## What is possible
 
@@ -18,6 +18,7 @@ Version context: current Lens Studio line is **5.24.0** (Sep 10, 2026). Spectacl
 - **Profiling tools:** in-app **bug icon** panel, **Lens Profiler / Mobile Monitor** ("Send to All Snapchat with Lens Profiler" → **Perfetto** traces). The **Lens Performance Toolkit is deprecated**.
 - **Cost offloaders:** **SnapML ML Component**, **Remote Assets**, **Lens Cloud**, **Remote Storage Assets**.
 - **Optimization levers:** **Performance Texture Compression**, **Draco** mesh compression, **instancing**, **texture atlasing**, **Tween Manager**, **VFX Asset** auto-batching (LS 5.0+), **Scene Manager** async prefabs.
+- **To profile, not a proven lever: Batching Enabled** on a graph material's Shader node. The 5.24.1 notes say batched shaders got much cheaper per frame than before, not that batching beats leaving it off, and no Snap doc page explains what it batches or when it helps (its only doc mention is the Custom Text2D page, where it is required). A single full-screen post effect is one draw with nothing to batch, so expect no gain there (reasoning, not measured).
 - **Publishing surfaces:** **My Lenses / Lens Publishing Portal**, **Organization**, **Lens Folder** (with roles), **Snapcode**, **Lens Link**.
 
 ## How to build it
